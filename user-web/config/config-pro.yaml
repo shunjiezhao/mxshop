@@ -1,0 +1,6 @@
+UserWeb:
+  Name: 'user-web'
+  GinAddr: "localhost:9000"
+  UserSrv:
+    Host: '127.0.0.1'
+    Port: 9090
