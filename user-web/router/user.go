@@ -6,10 +6,9 @@ import (
 	"web-api/user-web/middlewares"
 )
 
-func InitUserRouter(engine *gin.Engine) {
-	uSrvPath := "/v1/user"
+func InitUserRouter(engine *gin.RouterGroup) {
 	// 登陆不需要jwttoken
-	group := engine.Group(uSrvPath)
+	group := engine.Group("user")
 	{
 		group.GET("list", middlewares.JwtToken(), middlewares.IsAdmin(), api.GetUserList)
 		group.POST("login", api.PassWordLogin)

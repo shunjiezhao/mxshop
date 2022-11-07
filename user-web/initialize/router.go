@@ -16,6 +16,11 @@ func Routers() *gin.Engine {
 	}
 	// 配置跨域
 	engine.Use(middlewares.Cors())
-	router.InitUserRouter(engine)
+	apiGroup := engine.Group("/v1")
+	{
+		router.InitUserRouter(apiGroup)
+		router.InitCaptcha(apiGroup)
+
+	}
 	return engine
 }

@@ -100,6 +100,10 @@ func PassWordLogin(c *gin.Context) {
 		})
 		return
 	}
+	if verify := store.Verify(loginForm.CaptchaId, loginForm.Captcha, true); !verify {
+		c.JSON(http.StatusBadRequest, gin.H{"captcha": "验证码错误"})
+		return
+	}
 	user, err := global.UserServiceClient.GetUserByMobile(context.Background(), &userpb.GetUserByMobileRequest{
 		Mobile: loginForm.Mobile,
 	})
@@ -126,6 +130,7 @@ func PassWordLogin(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"msg": "内部错误",
 		})
+		return
 	}
 	if resp != nil && resp.Success {
 		token, err := global.JwtTokenGen.GenerateToken(user.NickName, user.Id, user.Role)
@@ -140,10 +145,12 @@ func PassWordLogin(c *gin.Context) {
 			"token": token,
 			"msg":   "登陆成功",
 		})
+		return
 	} else {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"msg": "密码错误",
 		})
+		return
 	}
 
 }
