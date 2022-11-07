@@ -125,7 +125,7 @@ func TestGenerateToken(t *testing.T) {
 		return time.Unix(1516239022, 0)
 	}
 
-	token, err := tk.GenerateToken("zsj", 123)
+	token, err := tk.GenerateToken("zsj", 123, 0)
 	if err != nil {
 		t.Errorf("can not GenerateToken err: %v", err)
 	}

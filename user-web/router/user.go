@@ -11,7 +11,7 @@ func InitUserRouter(engine *gin.Engine) {
 	// 登陆不需要jwttoken
 	group := engine.Group(uSrvPath)
 	{
-		group.GET("list", middlewares.JwtToken(), api.GetUserList)
+		group.GET("list", middlewares.JwtToken(), middlewares.IsAdmin(), api.GetUserList)
 		group.POST("login", api.PassWordLogin)
 	}
 }

@@ -13,6 +13,7 @@ import (
 	"web-api/user-web/global"
 	"web-api/user-web/global/response"
 	userpb "web-api/user-web/proto"
+	"web-api/user-web/utils/token"
 )
 
 func HandlerGrpcErrorToHttp(err error, c *gin.Context) {
@@ -50,6 +51,9 @@ func GetUserList(ctx *gin.Context) {
 	if checkGrpc(ctx) {
 		return
 	}
+	claim, _ := ctx.Get("claim")
+	customClaim := claim.(*token.CustomClaim)
+	zap.L().Info("访问用户:", zap.String("name", customClaim.Nickname), zap.Int("id", int(customClaim.UserId)))
 	resp, err := global.UserServiceClient.GetUserList(context.Background(), &userpb.PageInfo{
 		Number: 1,
 		Size:   0,
@@ -59,6 +63,7 @@ func GetUserList(ctx *gin.Context) {
 		HandlerGrpcErrorToHttp(err, ctx)
 		return
 	}
+
 	result := make([]interface{}, 0)
 	for _, val := range resp.Data {
 		userResp := response.UserResponse{
@@ -69,11 +74,6 @@ func GetUserList(ctx *gin.Context) {
 			Mobile:   val.Mobile,
 		}
 
-		//data["id"] = val.Id
-		//data["name"] = val.NickName
-		//data["birthday"] = val.Birthday
-		//data["gender"] = val.Gender
-		//data["mobile"] = val.Mobile
 		result = append(result, userResp)
 	}
 	ctx.JSON(http.StatusOK, result)
@@ -128,7 +128,7 @@ func PassWordLogin(c *gin.Context) {
 		})
 	}
 	if resp != nil && resp.Success {
-		token, err := global.JwtTokenGen.GenerateToken(user.NickName, user.Id)
+		token, err := global.JwtTokenGen.GenerateToken(user.NickName, user.Id, user.Role)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"msg": "内部错误",

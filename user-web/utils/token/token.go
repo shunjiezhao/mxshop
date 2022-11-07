@@ -13,6 +13,7 @@ type JWTTokenVerifier struct {
 type CustomClaim struct {
 	Nickname string `json:"nickname"`
 	UserId   uint32 `json:"user_id"`
+	Role     uint32 `json:"role,omitempty"`
 	jwt.StandardClaims
 }
 
@@ -66,11 +67,12 @@ func NewJWTokenGen(issue string, ExpiresAt time.Duration, privateKey *rsa.Privat
 	}
 }
 
-func (t *JWTokenGen) GenerateToken(nickName string, id uint32) (string, error) {
+func (t *JWTokenGen) GenerateToken(nickName string, id uint32, role uint32) (string, error) {
 	nowSec := t.nowFunc()
 	return jwt.NewWithClaims(jwt.SigningMethodRS256, CustomClaim{
 		Nickname: nickName,
 		UserId:   id,
+		Role:     role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: nowSec.Add(t.ExpiresAt).Unix(),
 			IssuedAt:  nowSec.Unix(),

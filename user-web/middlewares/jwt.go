@@ -20,13 +20,14 @@ func JwtToken() gin.HandlerFunc {
 				"msg": "没有携带token",
 			})
 		}
-		_, err := global.JWTTokenVerifier.Verify(token)
+		claim, err := global.JWTTokenVerifier.Verify(token)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"msg": "token无效",
 			})
 			c.Abort()
 		}
+		c.Set("claim", claim)
 		c.Next()
 	}
 }
