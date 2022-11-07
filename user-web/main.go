@@ -12,6 +12,8 @@ func main() {
 	// 初始化配置文件
 	initialize.InitConfig()
 	initialize.InitValidator("zh")
+	initialize.InitConnect()
+	initialize.InitJwtVerifier()
 
 	routers := initialize.Routers()
 

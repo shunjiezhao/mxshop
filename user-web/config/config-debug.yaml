@@ -1,4 +1,11 @@
-name: 'user-web'
-user_srv:
-  host: '127.0.0.1'
-  port: 50051
+UserWeb:
+  Name: 'user-web'
+  GinAddr: "localhost:9000"
+  UserSrv:
+    Host: '127.0.0.1'
+    Port: 9090
+  JwtConfig:
+    Secret: 'zsj'
+    Issuer: 'zsj'
+    Expire: 20
+    PublicKeyPath:

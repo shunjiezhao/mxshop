@@ -4,3 +4,9 @@ UserWeb:
   UserSrv:
     Host: '127.0.0.1'
     Port: 9090
+  JwtConfig:
+    Secret: 'zsj'
+    Issuer: 'zsj'
+    Expire: 20
+    PublicKeyPath: 'user-web/config/publickey'
+    PrivateKeyPath: 'user-web/config/privatekey'
