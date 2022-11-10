@@ -1,0 +1,60 @@
+syntax = "proto3";
+package user.v1;
+import "google/protobuf/empty.proto";
+
+
+option go_package = "./gen/v1/user;userpb";
+
+service UserService{
+  rpc GetUserList(PageInfo) returns(GetUserListResponse); // 用户的列表
+  rpc GetUserByMobile(GetUserByMobileRequest) returns(UserInfo); // 通过 mobile 查询用户
+  rpc GetUserById(GetUserByIdRequest) returns(UserInfo); // 通过 id 查询用户
+  rpc CreateUser(CreateUserRequest) returns (UserInfo); // 添加用户
+  rpc UpdateUser(UpdateUserRequest) returns (google.protobuf.Empty); // 更新用户
+  rpc CheckPassWord(CheckPassWordRequest) returns(CheckPassWordResponse) ;// 检查用户名密码
+}
+
+message PageInfo{
+  uint32 number = 1; // page number
+  uint32 size = 2; // page offset
+}
+
+message UserInfo{
+  uint32 id = 1;
+  string pass_word = 2;
+  string mobile = 3;
+  string nick_name = 4;
+  uint64 birthday = 5;
+  uint32 gender = 6;
+  uint32  role = 7;
+}
+
+message GetUserListResponse{
+  uint32 total = 1;
+  repeated UserInfo data = 2;
+}
+message GetUserByMobileRequest{
+  string mobile = 1;
+}
+message GetUserByIdRequest{
+  uint32 id = 1;
+}
+// 目前只有通过手机号注册
+message CreateUserRequest{
+  string nickname = 3;
+  string mobile = 1;
+  string pass_word = 2;
+}
+message UpdateUserRequest{
+  uint32 id = 1;
+  string nick_name = 4;
+  uint64 birthday = 5;
+  uint32 gender = 6;
+}
+message CheckPassWordRequest{
+  string pass_word = 1;
+  string enc_pwd = 2;
+}
+message CheckPassWordResponse{
+  bool success = 1;
+}

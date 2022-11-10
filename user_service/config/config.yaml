@@ -1,0 +1,19 @@
+ServiceConfig:
+  IP: 'localhost'
+  Port: 9092
+  SrvName: 'user-srv'
+  DBConfig:
+    Host: 'localhost'
+    Port: 5432
+    User: 'postgres'
+    Dbname: 'mxshop'
+    Password: 'az123.'
+  EtcdConfig:
+    EndPoints:
+      - 'localhost:2379'
+    Prefix: 'user-srv'
+    LeaseSec: 5
+
+
+
+
