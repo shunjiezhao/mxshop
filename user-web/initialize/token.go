@@ -25,7 +25,7 @@ func InitJwtVerifier() {
 		zap.L().Fatal("can not ParseRSAPrivateKeyFromPEM", zap.Error(err))
 	}
 	global.JwtTokenGen = token.NewJWTokenGen(global.ServerConfig.JwtInfo.Issuer,
-		(global.ServerConfig.JwtInfo.Expire * time.Minute),
+		(global.ServerConfig.JwtInfo.ExpireMin * time.Minute),
 		privateKey)
 }
 

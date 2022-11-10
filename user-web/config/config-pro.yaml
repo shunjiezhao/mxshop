@@ -1,5 +1,7 @@
 UserWeb:
+  Debug: true
   Name: 'user-web'
+  SrvName: 'user-srv'
   GinAddr: "localhost:9000"
   UserSrv:
     Host: '127.0.0.1'
@@ -10,3 +12,12 @@ UserWeb:
     Expire: 20
     PublicKeyPath: 'user-web/config/publickey'
     PrivateKeyPath: 'user-web/config/privatekey'
+  RedisConfig:
+    Host: '127.0.0.1'
+    Port: 50000
+    ExpireMin: 9
+  EtcdConfig:
+    EndPoints:
+      - 'localhost:2379'
+    Prefix: 'user-srv'
+

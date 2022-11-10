@@ -7,5 +7,10 @@ UserWeb:
   JwtConfig:
     Secret: 'zsj'
     Issuer: 'zsj'
-    Expire: 20
-    PublicKeyPath:
+    ExpireMin: 20
+    PublicKeyPath: 'user-web/config/publickey'
+    PrivateKeyPath: 'user-web/config/privatekey'
+  RedisConfig:
+    Host: '127.0.0.1'
+    Port: 50000
+    ExpireMin: 7

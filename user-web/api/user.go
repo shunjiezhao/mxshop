@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v9"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -47,13 +48,13 @@ func HandlerGrpcErrorToHttp(err error, c *gin.Context) {
 }
 
 func GetUserList(ctx *gin.Context) {
-	// 连接 用户服务
-	if checkGrpc(ctx) {
-		return
+	// 通过 etcd 获取 服务地址
+
+	if global.ServerConfig.Debug == false {
+		claim, _ := ctx.Get("claim")
+		customClaim := claim.(*token.CustomClaim)
+		zap.L().Info("访问用户:", zap.String("name", customClaim.Nickname), zap.Int("id", int(customClaim.UserId)))
 	}
-	claim, _ := ctx.Get("claim")
-	customClaim := claim.(*token.CustomClaim)
-	zap.L().Info("访问用户:", zap.String("name", customClaim.Nickname), zap.Int("id", int(customClaim.UserId)))
 	resp, err := global.UserServiceClient.GetUserList(context.Background(), &userpb.PageInfo{
 		Number: 1,
 		Size:   0,
@@ -153,4 +154,53 @@ func PassWordLogin(c *gin.Context) {
 		return
 	}
 
+}
+
+// 用户注册
+func Register(c *gin.Context) {
+	if checkGrpc(c) {
+		return
+	}
+	form := forms.RegisterForm{}
+	if err, ok := forms.BindAndValid(c, &form); !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": err,
+		})
+		return
+	}
+	// 验证码校验
+	value, err := global.Rdb.Get(context.Background(), form.Mobile).Result()
+	if err != redis.Nil {
+		zap.L().Info("用户注册的手机号码 没有发送验证码或者验证码过期")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": "验证码过期",
+		})
+		return
+	}
+	if form.Code != value {
+		fmt.Println("want:%v; but:%v", value, form.Code)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"msg": "验证码错误",
+		})
+		return
+	}
+
+	//注册
+	user, err := global.UserServiceClient.CreateUser(context.Background(), &userpb.CreateUserRequest{
+		Nickname: form.Mobile,
+		Mobile:   form.Mobile,
+		PassWord: form.PassWord,
+	})
+	if err != nil {
+		zap.L().Info("[CreateUser]  【创建用户失败】", zap.Error(err))
+		c.JSON(http.StatusConflict, gin.H{
+			"msg": "无法创建用户",
+		})
+		return
+	}
+	token, err := global.JwtTokenGen.GenerateToken(user.NickName, user.Id, user.Role)
+	c.JSON(http.StatusOK, gin.H{
+		"id":    user.Id,
+		"token": token,
+	})
 }

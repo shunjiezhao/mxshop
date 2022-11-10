@@ -1,18 +1,12 @@
 package initialize
 
 import (
-	"fmt"
-	"go.uber.org/zap"
+	"google.golang.org/grpc/resolver"
 	"web-api/user-web/etcd/discovery"
 	"web-api/user-web/global"
 )
 
 func InitEtcd() {
-	var endpoints []string
-	endpoints = append(endpoints, fmt.Sprintf("%s:%d", global.ServerConfig.EtcdInfo.Host, global.ServerConfig.EtcdInfo.Port))
-	global.ServerDiscovery = discovery.NewServiceDiscovery(endpoints)
-	err := global.ServerDiscovery.WatchService(global.ServerConfig.EtcdInfo.Prefix)
-	if err != nil {
-		zap.L().Error("Init Fail", zap.Error(err))
-	}
+	global.ServerDiscovery = discovery.NewServiceDiscovery(global.ServerConfig.EtcdInfo.EndPoints)
+	resolver.Register(global.ServerDiscovery)
 }
