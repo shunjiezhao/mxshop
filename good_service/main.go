@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-
 	initialize.InitConfig() // 初始化配置
 	initialize.InitDB()
 
@@ -21,7 +20,6 @@ func main() {
 		log.Fatalf("can not create tcp listener: %v", err)
 	}
 	svc := grpc.NewServer()
-	proto.new
 
 	logger, err := NewZapLogger()
 	if err != nil {

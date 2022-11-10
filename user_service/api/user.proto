@@ -20,24 +20,24 @@ message PageInfo{
 }
 
 message UserInfo{
-  uint32 id = 1;
+  int32 id = 1;
   string pass_word = 2;
   string mobile = 3;
   string nick_name = 4;
-  uint64 birthday = 5;
-  uint32 gender = 6;
-  uint32  role = 7;
+  int64 birthday = 5;
+  int32 gender = 6;
+  int32  role = 7;
 }
 
 message GetUserListResponse{
-  uint32 total = 1;
+  int32 total = 1;
   repeated UserInfo data = 2;
 }
 message GetUserByMobileRequest{
   string mobile = 1;
 }
 message GetUserByIdRequest{
-  uint32 id = 1;
+  int32 id = 1;
 }
 // 目前只有通过手机号注册
 message CreateUserRequest{
@@ -46,10 +46,10 @@ message CreateUserRequest{
   string pass_word = 2;
 }
 message UpdateUserRequest{
-  uint32 id = 1;
+  int32 id = 1;
   string nick_name = 4;
-  uint64 birthday = 5;
-  uint32 gender = 6;
+  int64 birthday = 5;
+  int32 gender = 6;
 }
 message CheckPassWordRequest{
   string pass_word = 1;

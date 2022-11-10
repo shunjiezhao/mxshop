@@ -2,9 +2,12 @@ package initialize
 
 import (
 	"fmt"
+	"google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	proto "server/good_service/api/gen/v1/goods"
 	"server/good_service/global"
+	"server/good_service/handler"
 )
 
 func InitDB() {
@@ -19,6 +22,8 @@ func InitDB() {
 		global.Settings.DBConfig.Port)
 
 	global.DB, err = gorm.Open(postgres.Open(dsn), g)
+	server := grpc.NewServer()
+	proto.RegisterGoodsServer(server, &handler.GoodsServer{})
 
 	handlerErr(err)
 	sqlDB, err := global.DB.DB()

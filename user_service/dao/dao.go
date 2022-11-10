@@ -34,7 +34,7 @@ func dbUserToDao(user *model.User) *userpb.UserInfo {
 		Role:     user.Role,
 	}
 	if user.Birthday != nil {
-		info.Birthday = uint64(user.Birthday.Unix())
+		info.Birthday = user.Birthday.Unix()
 	}
 	return info
 }

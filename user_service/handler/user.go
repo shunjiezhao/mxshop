@@ -27,7 +27,7 @@ func (u *UserService) GetUserList(ctx context.Context, pageInfo *userpb.PageInfo
 		return nil, status.Error(err.Code, err.Err.Error())
 	}
 	var resp userpb.GetUserListResponse
-	resp.Total = uint32(len(userList))
+	resp.Total = int32(len(userList))
 	// 分页 利用 limit
 	for _, user := range userList {
 		resp.Data = append(resp.Data, (user))
