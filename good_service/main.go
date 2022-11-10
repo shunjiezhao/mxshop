@@ -8,7 +8,6 @@ import (
 	"net"
 	"server/good_service/global"
 	"server/good_service/initialize"
-	"server/good_service/model"
 )
 
 func main() {
@@ -22,17 +21,7 @@ func main() {
 		log.Fatalf("can not create tcp listener: %v", err)
 	}
 	svc := grpc.NewServer()
-
-	global.DB.Migrator().DropTable(&model.User{})
-	global.DB.AutoMigrate(&model.User{})
-
-	//for i := 1; i < 10; i++ {
-	//	service.CreateUser(context.Background(), &userpb.CreateUserRequest{
-	//		Mobile:   fmt.Sprintf("1334744689%d", i),
-	//		PassWord: "123456",
-	//		Nickname: fmt.Sprintf("name%d", i),
-	//	})
-	//}
+	proto.new
 
 	logger, err := NewZapLogger()
 	if err != nil {
