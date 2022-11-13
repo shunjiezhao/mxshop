@@ -12,6 +12,12 @@ import (
 
 const schema = "zsj"
 
+type RegisterClient interface {
+	Register(serName, addr string, lease int64) error // 注册
+	Watch()                                           // 监听
+	Close() error                                     // 关闭
+}
+
 // 创建注册服务
 type ServiceRegister struct {
 	cli     *c3.Client
@@ -21,6 +27,12 @@ type ServiceRegister struct {
 	key           string
 	val           string
 	Logger        *zap.Logger
+}
+
+func (s *ServiceRegister) Register(serName, addr string, lease int64) error {
+	s.key = "/" + schema + "/" + serName + "/" + addr // 这里需要与前端进行协商
+	s.val = addr
+	return s.putKeyWithLease(lease)
 }
 
 //设置租约+注册
@@ -49,18 +61,12 @@ func (s *ServiceRegister) putKeyWithLease(lease int64) error {
 
 }
 
-//ListenLeaseRespChan 监听 续租情况
+//Watch 监听 续租情况
 //TODO:优雅的退出
-func (s *ServiceRegister) ListenLeaseRespChan() {
-	i := 0
+func (s *ServiceRegister) Watch() {
 	for {
 		select {
-		case leaseKeepResp := <-s.keepAliveChan:
-			i++
-			if i == 100 {
-				s.Logger.Info("【Etcd】 续约成功", zap.Any("resp", leaseKeepResp))
-				i = 0
-			}
+		case <-s.keepAliveChan:
 		}
 	}
 	s.Logger.Info("【Etcd】 关闭续租")
@@ -77,7 +83,7 @@ func (s *ServiceRegister) Close() error {
 }
 
 //NewServiceRegister 新建注册服务
-func NewServiceRegister(endpoints []string, serName, addr string, lease int64, logger *zap.Logger) (*ServiceRegister, error) {
+func NewServiceRegister(endpoints []string, logger *zap.Logger) (RegisterClient, error) {
 	cli, err := c3.New(c3.Config{
 		Endpoints:   endpoints,
 		DialTimeout: 5 * time.Second,
@@ -88,14 +94,7 @@ func NewServiceRegister(endpoints []string, serName, addr string, lease int64, l
 
 	ser := &ServiceRegister{
 		cli:    cli,
-		key:    "/" + schema + "/" + serName + "/" + addr, // 这里需要与前端进行协商
-		val:    addr,
 		Logger: logger,
-	}
-
-	//申请租约设置时间keepalive
-	if err := ser.putKeyWithLease(lease); err != nil {
-		return nil, err
 	}
 	return ser, nil
 }

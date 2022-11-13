@@ -7,7 +7,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	proto "server/good_service/api/gen/v1/goods"
-	"server/good_service/global"
 	"server/good_service/model"
 )
 
@@ -17,10 +16,10 @@ func (g *GoodsServer) BrandList(ctx context.Context, request *proto.BrandFilterR
 		brandResponse []*proto.BrandInfoResponse
 		brands        []model.Brands
 	)
-	if global.DB == nil {
+	if g.db == nil {
 		panic("DB is nil")
 	}
-	result := global.DB.Find(&brands)
+	result := g.db.Find(&brands)
 	resp.Total = int32(result.RowsAffected)
 	for _, brand := range brands {
 		brandResponse = append(brandResponse, &proto.BrandInfoResponse{
@@ -38,7 +37,7 @@ func (g *GoodsServer) CreateBrand(ctx context.Context, req *proto.BrandRequest) 
 		resp proto.BrandInfoResponse
 	)
 
-	result := global.DB.Create(&model.Brands{
+	result := g.db.Create(&model.Brands{
 		BaseModel: model.BaseModel{ID: req.Id},
 		Name:      req.Name,
 		Logo:      req.Logo,
@@ -51,7 +50,7 @@ func (g *GoodsServer) CreateBrand(ctx context.Context, req *proto.BrandRequest) 
 }
 
 func (g *GoodsServer) DeleteBrand(ctx context.Context, req *proto.BrandRequest) (*emptypb.Empty, error) {
-	global.DB.Delete(&model.Brands{}, req.Id)
+	g.db.Delete(&model.Brands{}, req.Id)
 	return &emptypb.Empty{}, nil
 }
 
@@ -61,11 +60,19 @@ func (g *GoodsServer) UpdateBrand(ctx context.Context, req *proto.BrandRequest) 
 		Logo: req.Logo,
 	}
 	resp := &emptypb.Empty{}
-	result := global.DB.Model(&brand).Where("id=?", req.Id).Updates(brand)
+	result := g.db.Model(&brand).Where("id=?", req.Id).Updates(brand)
 	if err := result.Error; err != nil {
 		zap.L().Info("can not update brand", zap.Int("id", int(req.Id)), zap.Error(err))
 		return resp, status.Error(codes.FailedPrecondition, "")
 	}
 
 	return resp, nil
+}
+
+func brand2Info(brands *model.Brands) *proto.BrandInfoResponse {
+	return &proto.BrandInfoResponse{
+		Id:   brands.ID,
+		Name: brands.Name,
+		Logo: brands.Logo,
+	}
 }

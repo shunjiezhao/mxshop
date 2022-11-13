@@ -6,6 +6,8 @@ require (
 	github.com/anaskhan96/go-password-encoder v0.0.0-20201010210601-c765b799fd72
 	github.com/docker/docker v20.10.21+incompatible
 	github.com/docker/go-connections v0.4.0
+	github.com/google/go-cmp v0.5.9
+	github.com/lib/pq v1.10.2
 	github.com/spf13/viper v1.14.0
 	go.etcd.io/etcd/client/v3 v3.5.5
 	go.uber.org/zap v1.21.0

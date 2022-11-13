@@ -8,7 +8,14 @@ import (
 )
 
 func InitDB() {
-	g := &gorm.Config{}
+	//newLogger := logger.New(log.New(os.Stdout, "\r\n", log.LstdFlags), logger.Config{
+	//	SlowThreshold: time.Millisecond,
+	//	Colorful:      true,
+	//	LogLevel:      logger.Info,
+	//})
+	g := &gorm.Config{
+		//Logger: newLogger,
+	}
 	var err error
 
 	dsn := fmt.Sprintf("host=%s user=%s dbname=%s password=%s port=%d sslmode=disable TimeZone=Asia/Shanghai",

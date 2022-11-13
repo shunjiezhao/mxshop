@@ -6,6 +6,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
+	"server/good_service/model"
 	"testing"
 	"time"
 
@@ -31,7 +32,7 @@ func RunWithMongoInDocker(m *testing.M) int {
 	}
 
 	ctx := context.Background()
-	cli.ContainerRemove(ctx, "Test_Postgres", types.ContainerRemoveOptions{Force: true})
+	cli.ContainerRemove(ctx, "Test_Goods_Postgres", types.ContainerRemoveOptions{Force: true})
 	//, config *container.Config, hostConfig *container.HostConfig, networkingConfig *network.NetworkingConfig, platform *specs.Platform, containerName string) (container.ContainerCreateCreatedBody, error) {
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: image,
@@ -47,7 +48,7 @@ func RunWithMongoInDocker(m *testing.M) int {
 				{HostIP: "127.0.0.1", HostPort: "0"},
 			},
 		},
-	}, nil, nil, "Test_Postgres")
+	}, nil, nil, "Test_Goods_Postgres")
 	if err != nil {
 		log.Fatalln("check docker server is start?")
 	}
@@ -90,7 +91,16 @@ func NewClient(c context.Context) (*gorm.DB, error) {
 	}
 
 	sqlDB, err := DB.DB()
-
+	err = DB.AutoMigrate(
+		&model.Category{},
+		&model.Brands{},
+		&model.GoodsCategoryBrand{},
+		&model.Banner{},
+		&model.Goods{},
+	)
+	if err != nil {
+		panic(err)
+	}
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(10)
 	return DB, nil

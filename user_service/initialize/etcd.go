@@ -11,7 +11,7 @@ func InitEtcd(logger *zap.Logger) {
 	address := fmt.Sprintf("%s:%d", global.Settings.IP, global.Settings.Port)
 	ser, err := etcd.NewServiceRegister(global.Settings.EtcdInfo.EndPoints, global.Settings.SrvName, address, global.Settings.EtcdInfo.LeaseSec, logger)
 
-	go ser.ListenLeaseRespChan()
+	go ser.Watch()
 	if err != nil {
 		logger.Error("Init Fail", zap.Error(err))
 	}

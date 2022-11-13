@@ -4,14 +4,17 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"io"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 	proto "server/good_service/api/gen/v1/goods"
 	"server/good_service/global"
 	"server/good_service/handler"
 	"server/good_service/initialize"
 	"server/good_service/model"
-	"time"
+	"syscall"
 )
 
 func main() {
@@ -27,19 +30,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	go func() {
-		ticker := time.NewTicker(time.Millisecond * 100)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				if global.DB == nil {
-					log.Println("db is nil")
-				}
-			}
-
-		}
-	}()
 
 	address := fmt.Sprintf("%s:%d", global.Settings.IP, global.Settings.Port)
 	lis, err := net.Listen("tcp", address)
@@ -47,7 +37,7 @@ func main() {
 		log.Fatalf("can not create tcp listener: %v", err)
 	}
 	svc := grpc.NewServer()
-	proto.RegisterGoodsServer(svc, &handler.GoodsServer{})
+	proto.RegisterGoodsServer(svc, handler.New(global.DB))
 
 	logger, err := NewZapLogger()
 	if err != nil {
@@ -55,8 +45,21 @@ func main() {
 	}
 	logger.Info("grpc service run start", zap.String("name", "user"), zap.String("address", address))
 
-	go initialize.InitEtcd(logger)
-	log.Fatalln(svc.Serve(lis))
+	var etcClose io.Closer
+	etcClose = initialize.InitEtcd(logger)
+	go svc.Serve(lis)
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	// 注销服务
+	err = etcClose.Close()
+	if err != nil {
+		zap.L().Error("注销失败")
+		return
+	}
+	zap.L().Info("注销成功")
+
 }
 func NewZapLogger() (*zap.Logger, error) {
 	cfg := zap.NewDevelopmentConfig()

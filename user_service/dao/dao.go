@@ -82,10 +82,10 @@ func (d *Dao) GetUserList(ctx context.Context, page, pageSize uint32) ([]*userpb
 		}
 	}
 	var records []*userpb.UserInfo
+	global.DB.Scopes(Paginate(int(page), int(pageSize))).Find(&users)
 	for _, user := range users {
 		records = append(records, dbUserToDao(&user))
 	}
-	global.DB.Scopes(Paginate(int(page), int(pageSize))).Find(&users)
 
 	return records, nil
 }
