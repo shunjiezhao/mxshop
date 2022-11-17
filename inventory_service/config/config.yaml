@@ -1,0 +1,19 @@
+ServiceConfig:
+  IP: 'localhost'
+  Port: 9096
+  SrvName: 'inventory_srv'
+  DBConfig:
+    Host: 'localhost'
+    Port: 5432
+    User: 'postgres'
+    Dbname: 'mxshop_inventory'
+    Password: 'az123.'
+  EtcdConfig:
+    EndPoints:
+      - 'localhost:2379'
+    Prefix: 'inventory_srv'
+    LeaseSec: 5
+
+
+
+

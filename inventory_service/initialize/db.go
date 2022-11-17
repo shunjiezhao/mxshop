@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"server/good_service/global"
-	"server/inventory_service/model"
+	"server/inventory_service/global"
 )
 
 func InitDB() {
@@ -32,12 +31,6 @@ func InitDB() {
 	sqlDB, err := global.DB.DB()
 	handlerErr(err)
 
-	err = global.DB.AutoMigrate(
-		model.Inventory{},
-	)
-	if err != nil {
-		panic(err)
-	}
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(10)
 }

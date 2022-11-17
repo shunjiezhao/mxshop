@@ -1,6 +1,6 @@
 ServiceConfig:
   IP: 'localhost'
-  Port: 9093
+  Port: 9095
   SrvName: 'goods-srv'
   DBConfig:
     Host: 'localhost'

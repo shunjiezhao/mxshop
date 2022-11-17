@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"server/good_service/global"
+	"server/inventory_service/global"
 )
 
 var vp *viper.Viper
@@ -17,7 +17,7 @@ func InitConfig() {
 	debug := getEnvBool("MXSHOP_DEBUG")
 	configFileName := "inventory_service/config/config.yaml"
 	if debug {
-		configFileName = "good_service/config/config.yaml"
+		configFileName = "inventory_service/config/config.yaml"
 	}
 	err := readFile(configFileName, "yaml")
 	if err != nil {
