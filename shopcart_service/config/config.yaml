@@ -1,0 +1,19 @@
+ServiceConfig:
+  IP: 'localhost'
+  Port: 9096
+  SrvName: 'shopcart_service'
+  DBConfig:
+    Host: 'localhost'
+    Port: 5432
+    User: 'postgres'
+    Dbname: 'mxshop_shopcart'
+    Password: 'az123.'
+  EtcdConfig:
+    EndPoints:
+      - 'localhost:2379'
+    Prefix: 'shopcart_service'
+    LeaseSec: 5
+
+
+
+

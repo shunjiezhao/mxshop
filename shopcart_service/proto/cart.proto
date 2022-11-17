@@ -1,0 +1,105 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+option go_package = ".;proto";
+
+
+service Order{
+  // 购物车
+  rpc CartItemList(UserInfo) returns(CartItemListResponse);// 获取购物车信息
+  rpc CreateCart(CartItemRequest) returns (ShopCartInfoResponse); // 添加商品到购物车
+  rpc UpdateCartItem(CartItemRequest) returns (google.protobuf.Empty); // 修改购物车记录
+
+  // 订单
+  rpc Create(OrderRequest) returns (OrderInfoResponse);
+  rpc OrderList(OrderFilterRequest) returns (OrderFilterResponse);
+  rpc OrderDetail(OrderRequest) returns (OrderInfoDetailResponse);
+  // 支付成功更新， 超时时候更新
+  rpc UpdateOrderStatus(OrderStatus) returns (google.protobuf.Empty); // 修改订单状态
+
+}
+message OrderStatus{
+  int32 id = 1;
+  string order_sn = 2;
+  string status = 3;
+}
+
+message OrderInfoDetailResponse{
+  OrderInfoResponse order_info = 1;
+  repeated OrderItemResponse goods = 2;
+
+
+}
+message OrderItemResponse{
+  int32 id = 1;
+  int32 order_id = 2;
+  int32 goods_id = 3;
+  int32 nums = 4;
+  string goodName = 5;
+  string goodsImage = 6;
+  float goodsPrice = 7;
+}
+// 为什么不复用 OrderRequest 因为我们需要分页
+message OrderFilterRequest{
+  int32 user_id = 1;
+  int32 page = 2;// 第几页
+  int32 page_per_nums = 3;//一页多少个
+}
+
+message OrderFilterResponse{
+  int32 total = 1;
+  repeated OrderInfoResponse data = 2;
+}
+
+message OrderInfoResponse{
+  int32 id = 1;
+  int32 user_id = 2;
+  string order_sn = 3; // 订单的编号，当提交订单后，后台后生成。
+  string pay_type = 4; // 支付方式
+  float total = 5; // 总金额
+  ReceiveInfo rcv_info = 6;// 收件人信息
+  int32 status = 7;
+}
+// 订单具有瞬时性，也就是商品的价格，商品的图片，商品的描述都是定死的
+message OrderRequest{
+  int32 id = 1;// 获取时候会使用到
+  int32 user_id = 2;//用户id
+  int32 goods_id = 3;// 商品id
+  //  int32 nums = 4;
+  //  string goodName = 5;
+  //  string goodsImage = 6;
+  //  float goodsPrice = 7;
+  ReceiveInfo rcv_info = 4;
+}
+
+
+message ReceiveInfo {
+  //  收件人信息
+  string address = 4; // 地址
+  string rcv_name = 5; // 姓名
+  string mobile = 6; // 手机号
+}
+
+message UserInfo{
+  int32 id = 1;// user_id
+}
+message CartItemRequest{
+  int32 id = 1;
+  int32 userId = 2;//用户id
+  int32 goodsId = 3;// 商品id
+  int32 nums = 4;
+  // 商品的信息具有实时性，所以必须展示的时候查询，最具体现性的就是 商品的价格.
+}
+
+
+message ShopCartInfoResponse{
+  int32 id = 1;
+  int32 userId = 2;//用户id
+  int32 goodsId = 3;// 商品id
+  int32 nums = 4; // 数量
+  bool checked = 5; // 是否选中
+}
+
+message CartItemListResponse{
+  int32 total = 1;//总数
+  repeated ShopCartInfoResponse data= 2;
+}
