@@ -1,7 +1,7 @@
 UserWeb:
   Debug: true
-  Name: 'user-web'
-  SrvName: 'user-srv'
+  Name: 'user_web'
+  SrvName: 'user_srv'
   GinAddr: "localhost:9000"
   UserSrv:
     Host: '127.0.0.1'
@@ -9,15 +9,15 @@ UserWeb:
   JwtConfig:
     Secret: 'zsj'
     Issuer: 'zsj'
-    Expire: 20
+    ExpireMin: 60
     PublicKeyPath: 'user-web/config/publickey'
     PrivateKeyPath: 'user-web/config/privatekey'
   RedisConfig:
     Host: '127.0.0.1'
-    Port: 50000
+    Port: 6379
     ExpireMin: 9
   EtcdConfig:
     EndPoints:
       - 'localhost:2379'
-    Prefix: 'user-srv'
+    Prefix: 'user_srv'
 

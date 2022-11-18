@@ -1,0 +1,23 @@
+CartWeb:
+  Debug: true
+  Name: 'shop_cart_web'
+  SrvName: 'shop_cart_srv'
+  GinAddr: "localhost:10020"
+  JwtConfig:
+    Secret: 'zsj'
+    Issuer: 'zsj'
+    Expire: 20
+    PublicKeyPath: 'shop_cart-web/config/publickey'
+    PrivateKeyPath: 'shop_cart-web/config/privatekey'
+  RedisConfig:
+    Host: '127.0.0.1'
+    Port: 6379
+    ExpireMin: 9
+  EtcdConfig:
+    EndPoints:
+      - 'localhost:2379'
+    Prefix: 'shop_cart_srv'
+    GoodsSrvName: 'goods_srv'
+    InventorySrvName: 'inventory_srv'
+    UserSrvName: 'user_srv'
+    CartSrvName: 'cart_srv'

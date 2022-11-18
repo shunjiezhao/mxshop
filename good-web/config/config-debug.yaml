@@ -1,0 +1,19 @@
+GoodsWeb:
+  Debug: true
+  Name: 'goods_web'
+  SrvName: 'goods_srv'
+  GinAddr: "localhost:10000"
+  JwtConfig:
+    Secret: 'zsj'
+    Issuer: 'zsj'
+    Expire: 20
+    PublicKeyPath: 'good-web/config/publickey'
+    PrivateKeyPath: 'good-web/config/privatekey'
+  RedisConfig:
+    Host: '127.0.0.1'
+    Port: 6379
+    ExpireMin: 9
+  EtcdConfig:
+    EndPoints:
+      - 'localhost:2379'
+    Prefix: 'goods_srv'
