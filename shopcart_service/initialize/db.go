@@ -5,6 +5,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"server/shopcart_service/global"
+	"server/shopcart_service/model"
 )
 
 func InitDB() {
@@ -26,6 +27,7 @@ func InitDB() {
 		global.Settings.DBConfig.Port)
 
 	global.DB, err = gorm.Open(postgres.Open(dsn), g)
+	global.DB.AutoMigrate(&model.ShoppingCart{}, &model.OrderInfo{}, &model.OrderGoods{})
 
 	handlerErr(err)
 	sqlDB, err := global.DB.DB()

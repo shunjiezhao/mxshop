@@ -6,7 +6,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
-	"server/good_service/model"
+	"server/goods_service/model"
 	"testing"
 	"time"
 

@@ -8,6 +8,8 @@ service Order{
   rpc CartItemList(UserInfo) returns(CartItemListResponse);// 获取购物车信息
   rpc CreateCart(CartItemRequest) returns (ShopCartInfoResponse); // 添加商品到购物车
   rpc UpdateCartItem(CartItemRequest) returns (google.protobuf.Empty); // 修改购物车记录
+  rpc DeleteCartItem(CartItemRequest) returns (google.protobuf.Empty); // 删除购物车记录
+
 
   // 订单
   rpc Create(OrderRequest) returns (OrderInfoResponse);
@@ -57,7 +59,7 @@ message OrderInfoResponse{
   string pay_type = 4; // 支付方式
   float total = 5; // 总金额
   ReceiveInfo rcv_info = 6;// 收件人信息
-  int32 status = 7;
+  string status = 7;
 }
 // 订单具有瞬时性，也就是商品的价格，商品的图片，商品的描述都是定死的
 message OrderRequest{
@@ -74,9 +76,11 @@ message OrderRequest{
 
 message ReceiveInfo {
   //  收件人信息
-  string address = 4; // 地址
-  string rcv_name = 5; // 姓名
-  string mobile = 6; // 手机号
+  string address = 1; // 地址
+  string rcv_name =2; // 姓名
+  string mobile = 3; // 手机号
+  string post =  4;
+
 }
 
 message UserInfo{
@@ -87,6 +91,7 @@ message CartItemRequest{
   int32 userId = 2;//用户id
   int32 goodsId = 3;// 商品id
   int32 nums = 4;
+  bool checked= 5;
   // 商品的信息具有实时性，所以必须展示的时候查询，最具体现性的就是 商品的价格.
 }
 

@@ -5,7 +5,10 @@ import (
 	"github.com/anaskhan96/go-password-encoder"
 	"github.com/go-redsync/redsync/v4"
 	"gorm.io/gorm"
-	"server/shared/etcd"
+	proto "server/goods_service/api/gen/v1/goods"
+	proto3 "server/inventory_service/proto/gen/v1/inventory"
+	"server/shared/etcd/discovery"
+	"server/shared/etcd/register"
 	"server/shopcart_service/config"
 )
 
@@ -21,10 +24,16 @@ var (
 
 // etcd
 var (
-	ServiceRegister *etcd.ServiceRegister
+	ServiceRegister *register.ServiceRegister
 )
 
 // redis
 var (
 	RedisPool *redsync.Redsync
+)
+
+var (
+	GoodSrv         proto.GoodsClient
+	InventorySrv    proto3.InventoryClient
+	ServerDiscovery *discovery.ServiceDiscovery
 )

@@ -9,27 +9,16 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	proto "server/good_service/api/gen/v1/goods"
-	"server/good_service/global"
-	"server/good_service/handler"
-	"server/good_service/initialize"
-	"server/good_service/model"
+	proto "server/goods_service/api/gen/v1/goods"
+	"server/goods_service/global"
+	"server/goods_service/handler"
+	"server/goods_service/initialize"
 	"syscall"
 )
 
 func main() {
 	initialize.InitConfig() // 初始化配置
 	initialize.InitDB()
-	err := global.DB.AutoMigrate(
-		&model.Category{},
-		&model.Brands{},
-		&model.GoodsCategoryBrand{},
-		&model.Banner{},
-		&model.Goods{},
-	)
-	if err != nil {
-		panic(err)
-	}
 
 	address := fmt.Sprintf("%s:%d", global.Settings.IP, global.Settings.Port)
 	lis, err := net.Listen("tcp", address)

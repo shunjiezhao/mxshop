@@ -1,21 +1,18 @@
 ServiceConfig:
   IP: 'localhost'
-  Port: 9097
-  SrvName: 'cart_srv'
+  Port: 10010
+  SrvName: 'goods_srv'
   DBConfig:
     Host: 'localhost'
     Port: 5432
     User: 'postgres'
-    Dbname: 'mxshop_shopcart'
+    Dbname: 'mxshop_goods'
     Password: 'az123.'
   EtcdConfig:
     EndPoints:
       - 'localhost:2379'
-    Prefix: 'cart_srv'
+    Prefix: 'goods_srv'
     LeaseSec: 5
-    GoodSrvName: 'goods_srv'
-    InventorySrvName: 'inventory_srv'
-
 
 
 

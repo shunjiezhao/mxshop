@@ -9,7 +9,7 @@ import (
 
 type GormList []string
 
-func (g GormList) Value() (driver.Value, error){
+func (g GormList) Value() (driver.Value, error) {
 	return json.Marshal(g)
 }
 
@@ -19,9 +19,22 @@ func (g *GormList) Scan(value interface{}) error {
 }
 
 type BaseModel struct {
-	ID int32 `gorm:"primarykey;type:int" json:"id"` //为什么使用int32， bigint
-	CreatedAt time.Time `gorm:"column:add_time" json:"-"`
-	UpdatedAt time.Time `gorm:"column:update_time" json:"-"`
+	ID        int32          `gorm:"primarykey;type:int" json:"id"` //为什么使用int32， bigint
+	CreatedAt time.Time      `gorm:"column:add_time" json:"-"`
+	UpdatedAt time.Time      `gorm:"column:update_time" json:"-"`
 	DeletedAt gorm.DeletedAt `json:"-"`
-	IsDeleted bool `json:"-"`
+	IsDeleted bool           `json:"-"`
+}
+
+func Paginate(page, pageSize int) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		switch {
+		case pageSize > 100:
+			pageSize = 100
+		case pageSize <= 0:
+			pageSize = 10
+		}
+		offset := (page - 1) * pageSize
+		return db.Offset(offset).Limit(pageSize)
+	}
 }

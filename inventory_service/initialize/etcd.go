@@ -5,12 +5,12 @@ import (
 	"go.uber.org/zap"
 	"io"
 	"server/inventory_service/global"
-	"server/shared/etcd"
+	"server/shared/etcd/register"
 )
 
 func InitEtcd(logger *zap.Logger) io.Closer {
 	address := fmt.Sprintf("%s:%d", global.Settings.IP, global.Settings.Port)
-	ser, err := etcd.NewServiceRegister(global.Settings.EtcdInfo.EndPoints, logger)
+	ser, err := register.NewServiceRegister(global.Settings.EtcdInfo.EndPoints, logger)
 
 	//申请租约设置时间keepalive
 	if err := ser.Register(global.Settings.SrvName, address, global.Settings.EtcdInfo.LeaseSec); err != nil {

@@ -11,6 +11,10 @@ service Goods{
     rpc DeleteGoods(DeleteGoodsInfo) returns (google.protobuf.Empty);
     rpc UpdateGoods(CreateGoodsInfo) returns (google.protobuf.Empty);
     rpc GetGoodsDetail(GoodInfoRequest) returns(GoodsInfoResponse);
+    // id数组查询
+    rpc GetGoodsListByIds(GoodsListByIdsRequest)returns(GoodsListResponse);
+
+
 
     //商品分类
     rpc GetAllCategorysList(google.protobuf.Empty) returns(CategoryListResponse); //获取所有的分类
@@ -39,6 +43,9 @@ service Goods{
     rpc CreateCategoryBrand(CategoryBrandRequest) returns(CategoryBrandResponse); //添加banner图
     rpc DeleteCategoryBrand(CategoryBrandRequest) returns(google.protobuf.Empty); //删除轮播图
     rpc UpdateCategoryBrand(CategoryBrandRequest) returns(google.protobuf.Empty); //修改轮播图
+}
+message GoodsListByIdsRequest{
+    repeated int32 id = 1;
 }
 
 message CategoryListRequest {

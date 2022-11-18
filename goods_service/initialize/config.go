@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"server/good_service/global"
+	"server/goods_service/global"
 )
 
 var vp *viper.Viper
@@ -14,16 +14,16 @@ func getEnvBool(env string) bool {
 	return viper.GetBool(env)
 }
 func InitConfig() {
-	debug := getEnvBool("MXSHOP_DEBUG")
-	configFileName := "inventory_service/config/config.yaml"
-	if debug {
-		configFileName = "good_service/config/config.yaml"
-	}
+	configFileName := "goods_service/config/config.yaml"
 	err := readFile(configFileName, "yaml")
 	if err != nil {
 		panic(err)
 	}
-	readSection("ServiceConfig", global.Settings)
+	err = readSection("ServiceConfig", global.Settings)
+
+	if err != nil {
+		panic(err)
+	}
 	zap.L().Info("得到配置", zap.String("配置文件名", configFileName),
 		zap.Any("配置信息", global.Settings))
 

@@ -25,6 +25,7 @@ const _ = grpc.SupportPackageIsVersion7
 type InventoryClient interface {
 	SetInv(ctx context.Context, in *GoodsInvInfo, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	InvDetail(ctx context.Context, in *GoodsInvInfo, opts ...grpc.CallOption) (*GoodsInvInfo, error)
+	BatchInvDetail(ctx context.Context, in *InvListRequest, opts ...grpc.CallOption) (*InvListResponse, error)
 	Sell(ctx context.Context, in *SellInfo, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Reback(ctx context.Context, in *SellInfo, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
@@ -55,6 +56,15 @@ func (c *inventoryClient) InvDetail(ctx context.Context, in *GoodsInvInfo, opts 
 	return out, nil
 }
 
+func (c *inventoryClient) BatchInvDetail(ctx context.Context, in *InvListRequest, opts ...grpc.CallOption) (*InvListResponse, error) {
+	out := new(InvListResponse)
+	err := c.cc.Invoke(ctx, "/Inventory/BatchInvDetail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *inventoryClient) Sell(ctx context.Context, in *SellInfo, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/Inventory/Sell", in, out, opts...)
@@ -79,6 +89,7 @@ func (c *inventoryClient) Reback(ctx context.Context, in *SellInfo, opts ...grpc
 type InventoryServer interface {
 	SetInv(context.Context, *GoodsInvInfo) (*emptypb.Empty, error)
 	InvDetail(context.Context, *GoodsInvInfo) (*GoodsInvInfo, error)
+	BatchInvDetail(context.Context, *InvListRequest) (*InvListResponse, error)
 	Sell(context.Context, *SellInfo) (*emptypb.Empty, error)
 	Reback(context.Context, *SellInfo) (*emptypb.Empty, error)
 	mustEmbedUnimplementedInventoryServer()
@@ -93,6 +104,9 @@ func (UnimplementedInventoryServer) SetInv(context.Context, *GoodsInvInfo) (*emp
 }
 func (UnimplementedInventoryServer) InvDetail(context.Context, *GoodsInvInfo) (*GoodsInvInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InvDetail not implemented")
+}
+func (UnimplementedInventoryServer) BatchInvDetail(context.Context, *InvListRequest) (*InvListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchInvDetail not implemented")
 }
 func (UnimplementedInventoryServer) Sell(context.Context, *SellInfo) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sell not implemented")
@@ -149,6 +163,24 @@ func _Inventory_InvDetail_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Inventory_BatchInvDetail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InvListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServer).BatchInvDetail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Inventory/BatchInvDetail",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServer).BatchInvDetail(ctx, req.(*InvListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Inventory_Sell_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SellInfo)
 	if err := dec(in); err != nil {
@@ -199,6 +231,10 @@ var Inventory_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InvDetail",
 			Handler:    _Inventory_InvDetail_Handler,
+		},
+		{
+			MethodName: "BatchInvDetail",
+			Handler:    _Inventory_BatchInvDetail_Handler,
 		},
 		{
 			MethodName: "Sell",

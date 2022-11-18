@@ -17,6 +17,9 @@ type EtcdSettings struct {
 	EndPoints []string `yaml:"EndPoints"`
 	Prefix    string   `mapstructure:"Prefix"`
 	LeaseSec  int64    `mapstructure:"LeaseSec"`
+
+	GoodSrvName      string `yaml:"GoodSrvName"`
+	InventorySrvName string `yaml:"InventorySrvName"`
 }
 
 type ServiceConfig struct {

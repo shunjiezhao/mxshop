@@ -9,8 +9,8 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
-	"server/good_service/api/gen/v1/goods"
-	"server/good_service/model"
+	"server/goods_service/api/gen/v1/goods"
+	"server/goods_service/model"
 )
 
 func goodsToResponse(goods *model.Goods) *proto.GoodsInfoResponse {
@@ -49,6 +49,27 @@ type GoodsServer struct {
 	proto.UnimplementedGoodsServer
 }
 
+func (g *GoodsServer) GetGoodsListByIds(ctx context.Context, req *proto.GoodsListByIdsRequest) (*proto.GoodsListResponse, error) {
+	if len(req.Id) == 0 {
+		return nil, status.Errorf(codes.FailedPrecondition, "没有传递信息")
+	}
+	var (
+		goods []model.Goods
+		resp  proto.GoodsListResponse
+	)
+
+	result := g.db.Where("").Find(&goods, req.Id)
+	if err := result.Error; err != nil {
+		return nil, status.Errorf(codes.Internal, "")
+	}
+	for _, good := range goods {
+		resp.Data = append(resp.Data, goodsToResponse(&good))
+	}
+	b, _ := json.Marshal(resp)
+	println(string(b))
+	return &resp, nil
+}
+
 func New(db *gorm.DB) *GoodsServer {
 	return &GoodsServer{
 		db: db,
@@ -57,9 +78,7 @@ func New(db *gorm.DB) *GoodsServer {
 
 func (g *GoodsServer) GoodsList(ctx context.Context, req *proto.GoodsFilterRequest) (*proto.GoodsListResponse, error) {
 	// 关键词搜素，查询新品，查询热门商品，通过价格区间筛选，通过商品分配筛选
-	var (
-		resp proto.GoodsListResponse
-	)
+	var resp proto.GoodsListResponse
 	db := g.db.Model(&model.Goods{})
 
 	if req.KeyWords != "" {

@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"github.com/anaskhan96/go-password-encoder"
 	"gorm.io/gorm"
-	"server/shared/etcd"
+	"server/shared/etcd/register"
 	"server/user_service/config"
 )
 
@@ -20,5 +20,5 @@ var (
 
 // etcd
 var (
-	ServiceRegister *etcd.ServiceRegister
+	ServiceRegister *register.ServiceRegister
 )

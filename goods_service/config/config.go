@@ -15,15 +15,15 @@ type Addr struct {
 
 type EtcdSettings struct {
 	EndPoints []string `yaml:"EndPoints"`
-	Prefix    string   `mapstructure:"Prefix"`
-	LeaseSec  int64    `mapstructure:"LeaseSec"`
+	Prefix    string   `yaml:"Prefix"`
+	LeaseSec  int64    `yaml:"LeaseSec"`
 }
 
 type ServiceConfig struct {
 	// 服务器监听的 grpc 端口
-	IP      string `mapstructure:"IP"`
-	Port    int    `mapstructure:"Port"`
-	SrvName string `mapstructure:"SrvName"`
+	IP      string `yaml:"IP"`
+	Port    int    `yaml:"Port"`
+	SrvName string `yaml:"SrvName"`
 
 	DBConfig DBSettingS   `json:"db_config" mapstructure:"DBConfig"`
 	EtcdInfo EtcdSettings `mapstructure:"EtcdConfig"`

@@ -10,9 +10,10 @@ import (
 	"gorm.io/gorm"
 	"server/inventory_service/global"
 	"server/inventory_service/model"
-	"server/inventory_service/proto"
+	proto "server/inventory_service/proto/gen/v1/inventory"
 )
 
+//InventoryService
 type InventoryService struct {
 	logger *zap.Logger
 	db     *gorm.DB
@@ -31,6 +32,21 @@ func NewService(config *InventorySrvConfig) proto.InventoryServer {
 	}
 }
 
+func (i *InventoryService) BatchInvDetail(ctx context.Context, req *proto.InvListRequest) (*proto.InvListResponse, error) {
+	var inv []model.Inventory
+	if i.db.Find(&inv, req.GoodsId).RowsAffected == 0 {
+		return nil, status.Error(codes.NotFound, "没有库存信息")
+	}
+	var resp proto.InvListResponse
+	resp.Total = int32(len(inv))
+	for _, inventory := range inv {
+		resp.Data = append(resp.Data, &proto.GoodsInvInfo{
+			GoodsId: inventory.Goods,
+			Num:     inventory.ID,
+		})
+	}
+	return &resp, nil
+}
 func (i *InventoryService) SetInv(ctx context.Context, req *proto.GoodsInvInfo) (*emptypb.Empty, error) {
 	// 没有新增
 	var inv model.Inventory

@@ -6,6 +6,7 @@ option go_package = ".;proto";
 service Inventory {
     rpc SetInv(GoodsInvInfo) returns(google.protobuf.Empty); //设置库存
     rpc InvDetail(GoodsInvInfo) returns (GoodsInvInfo); // 获取库存信息
+    rpc BatchInvDetail(InvListRequest) returns (InvListResponse); // 获取库存信息
     rpc Sell(SellInfo) returns (google.protobuf.Empty); //库存扣减
     rpc Reback(SellInfo) returns(google.protobuf.Empty); //库存归还
 }
@@ -15,6 +16,14 @@ message GoodsInvInfo {
     int32 num = 2;
 }
 
+message InvListRequest{
+    repeated int32 goodsId = 1;
+}
+
+message InvListResponse{
+    int32 total = 1;
+    repeated GoodsInvInfo data = 2;
+}
 message SellInfo {
     repeated GoodsInvInfo goodsInfo = 1;
     string orderSn = 2;

@@ -6,7 +6,7 @@ import (
 	"github.com/go-redsync/redsync/v4"
 	"gorm.io/gorm"
 	"server/inventory_service/config"
-	"server/shared/etcd"
+	"server/shared/etcd/register"
 )
 
 var (
@@ -21,7 +21,7 @@ var (
 
 // etcd
 var (
-	ServiceRegister *etcd.ServiceRegister
+	ServiceRegister *register.ServiceRegister
 )
 
 // redis

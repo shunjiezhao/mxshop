@@ -12,7 +12,7 @@ import (
 	"server/inventory_service/global"
 	"server/inventory_service/handler"
 	"server/inventory_service/initialize"
-	"server/inventory_service/proto"
+	proto "server/inventory_service/proto/gen/v1/inventory"
 	"syscall"
 )
 

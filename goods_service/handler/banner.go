@@ -6,8 +6,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	proto "server/good_service/api/gen/v1/goods"
-	"server/good_service/model"
+	proto "server/goods_service/api/gen/v1/goods"
+	"server/goods_service/model"
 )
 
 func (g *GoodsServer) BannerList(ctx context.Context, empty *emptypb.Empty) (*proto.BannerListResponse, error) {

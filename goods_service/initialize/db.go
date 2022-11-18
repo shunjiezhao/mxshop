@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"server/good_service/global"
-	"server/inventory_service/model"
+	"server/goods_service/global"
+	"server/goods_service/model"
 )
 
 func InitDB() {
@@ -27,14 +27,16 @@ func InitDB() {
 		global.Settings.DBConfig.Port)
 
 	global.DB, err = gorm.Open(postgres.Open(dsn), g)
-
+	err = global.DB.AutoMigrate(
+		&model.Category{},
+		&model.Brands{},
+		&model.GoodsCategoryBrand{},
+		&model.Banner{},
+		&model.Goods{},
+	)
 	handlerErr(err)
 	sqlDB, err := global.DB.DB()
 	handlerErr(err)
-
-	err = global.DB.AutoMigrate(
-		model.Inventory{},
-	)
 	if err != nil {
 		panic(err)
 	}

@@ -10,7 +10,9 @@ import (
 	"os"
 	"os/signal"
 	"server/shopcart_service/global"
+	"server/shopcart_service/handler"
 	"server/shopcart_service/initialize"
+	proto "server/shopcart_service/proto/gen/v1/cart"
 	"syscall"
 )
 
@@ -18,18 +20,25 @@ func main() {
 	initialize.InitConfig() // 初始化配置;
 	initialize.InitDB()
 	initialize.InitRedis()
+	initialize.InitConnect()
 
 	address := fmt.Sprintf("%s:%d", global.Settings.IP, global.Settings.Port)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("can not create tcp listener: %v", err)
 	}
-	svc := grpc.NewServer()
 
 	logger, err := NewZapLogger()
 	if err != nil {
 		panic(err)
 	}
+
+	svc := grpc.NewServer()
+	proto.RegisterOrderServer(svc, handler.New(handler.Config{
+		DB:     global.DB,
+		Logger: logger,
+	}))
+
 	logger.Info("grpc service run start", zap.String("name", "user"), zap.String("address", address))
 
 	var etcClose io.Closer

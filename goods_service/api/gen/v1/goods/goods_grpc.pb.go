@@ -31,6 +31,8 @@ type GoodsClient interface {
 	DeleteGoods(ctx context.Context, in *DeleteGoodsInfo, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	UpdateGoods(ctx context.Context, in *CreateGoodsInfo, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetGoodsDetail(ctx context.Context, in *GoodInfoRequest, opts ...grpc.CallOption) (*GoodsInfoResponse, error)
+	// id数组查询
+	GetGoodsListByIds(ctx context.Context, in *GoodsListByIdsRequest, opts ...grpc.CallOption) (*GoodsListResponse, error)
 	//商品分类
 	GetAllCategorysList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CategoryListResponse, error)
 	//获取子分类
@@ -113,6 +115,15 @@ func (c *goodsClient) UpdateGoods(ctx context.Context, in *CreateGoodsInfo, opts
 func (c *goodsClient) GetGoodsDetail(ctx context.Context, in *GoodInfoRequest, opts ...grpc.CallOption) (*GoodsInfoResponse, error) {
 	out := new(GoodsInfoResponse)
 	err := c.cc.Invoke(ctx, "/Goods/GetGoodsDetail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *goodsClient) GetGoodsListByIds(ctx context.Context, in *GoodsListByIdsRequest, opts ...grpc.CallOption) (*GoodsListResponse, error) {
+	out := new(GoodsListResponse)
+	err := c.cc.Invoke(ctx, "/Goods/GetGoodsListByIds", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -293,6 +304,8 @@ type GoodsServer interface {
 	DeleteGoods(context.Context, *DeleteGoodsInfo) (*emptypb.Empty, error)
 	UpdateGoods(context.Context, *CreateGoodsInfo) (*emptypb.Empty, error)
 	GetGoodsDetail(context.Context, *GoodInfoRequest) (*GoodsInfoResponse, error)
+	// id数组查询
+	GetGoodsListByIds(context.Context, *GoodsListByIdsRequest) (*GoodsListResponse, error)
 	//商品分类
 	GetAllCategorysList(context.Context, *emptypb.Empty) (*CategoryListResponse, error)
 	//获取子分类
@@ -341,6 +354,9 @@ func (UnimplementedGoodsServer) UpdateGoods(context.Context, *CreateGoodsInfo) (
 }
 func (UnimplementedGoodsServer) GetGoodsDetail(context.Context, *GoodInfoRequest) (*GoodsInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGoodsDetail not implemented")
+}
+func (UnimplementedGoodsServer) GetGoodsListByIds(context.Context, *GoodsListByIdsRequest) (*GoodsListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGoodsListByIds not implemented")
 }
 func (UnimplementedGoodsServer) GetAllCategorysList(context.Context, *emptypb.Empty) (*CategoryListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllCategorysList not implemented")
@@ -513,6 +529,24 @@ func _Goods_GetGoodsDetail_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GoodsServer).GetGoodsDetail(ctx, req.(*GoodInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Goods_GetGoodsListByIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GoodsListByIdsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoodsServer).GetGoodsListByIds(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Goods/GetGoodsListByIds",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoodsServer).GetGoodsListByIds(ctx, req.(*GoodsListByIdsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -871,6 +905,10 @@ var Goods_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetGoodsDetail",
 			Handler:    _Goods_GetGoodsDetail_Handler,
+		},
+		{
+			MethodName: "GetGoodsListByIds",
+			Handler:    _Goods_GetGoodsListByIds_Handler,
 		},
 		{
 			MethodName: "GetAllCategorysList",

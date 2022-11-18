@@ -6,8 +6,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 	"gorm.io/gorm"
-	proto "server/good_service/api/gen/v1/goods"
-	"server/good_service/model"
+	proto "server/goods_service/api/gen/v1/goods"
+	"server/goods_service/model"
 	Potesting "server/shared/postgres/testing"
 	"testing"
 )
