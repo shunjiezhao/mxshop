@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"go.uber.org/zap"
 	"log"
 	"time"
 	"web-api/user-web/global"
@@ -14,11 +15,12 @@ func main() {
 	// 初始化配置文件
 	initialize.InitConfig()
 	initialize.InitValidator("zh")
+	initialize.InitQueue(zap.L())
 	initialize.InitConnect()
 	initialize.InitJwtVerifier()
 	initialize.InitRedis()
 
-	global.Rdb.Set(context.Background(), "123", 1, 1*time.Minute)
+	global.RedisClient.Set(context.Background(), "123", 1, 1*time.Minute)
 
 	routers := initialize.Routers()
 	log.Fatal(routers.Run(global.ServerConfig.GinAddr))

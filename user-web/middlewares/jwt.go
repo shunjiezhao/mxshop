@@ -28,6 +28,7 @@ func JwtToken() gin.HandlerFunc {
 			c.Abort()
 		}
 		c.Set("claim", claim)
+		c.Set("user_id", claim.UserId)
 		c.Next()
 	}
 }

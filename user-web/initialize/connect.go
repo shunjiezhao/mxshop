@@ -7,6 +7,7 @@ import (
 	"web-api/user-web/etcd/discovery"
 	"web-api/user-web/global"
 	userpb "web-api/user-web/proto"
+	"web-api/user-web/utils/divide"
 )
 
 // 连接grpc
@@ -20,4 +21,14 @@ func InitConnect() {
 		return
 	}
 	global.UserServiceClient = userpb.NewUserServiceClient(conn)
+
+	//TODO: 地址配置化
+	conn, err = grpc.Dial(global.ServerDiscovery.Scheme()+"://zsj.com/"+"pk_srv",
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`), grpc.WithInsecure())
+	if err != nil {
+		zap.L().Error("[GetUserList] 连接 【PK服务失败】", zap.Error(err))
+		return
+	}
+	global.PKClient = userpb.NewPKClient(conn)
+	global.UserDivide = divide.NewDivide(global.PKClient, global.UserSubscriber)
 }

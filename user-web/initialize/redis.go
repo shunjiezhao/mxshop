@@ -7,11 +7,11 @@ import (
 )
 
 func InitRedis() {
-	global.Rdb = redis.NewClient(&redis.Options{
+	global.RedisClient = redis.NewClient(&redis.Options{
 		Addr: fmt.Sprintf("%s:%d", global.ServerConfig.RedisInfo.Host,
 			global.ServerConfig.RedisInfo.Port),
 	})
-	if global.Rdb == nil {
+	if global.RedisClient == nil {
 		panic("can not connect redis")
 	}
 }

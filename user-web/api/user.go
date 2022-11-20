@@ -6,12 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v9"
+	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
+	"web-api/shared/queue"
+	"web-api/shared/userid"
 	"web-api/user-web/forms"
 	"web-api/user-web/global"
 	"web-api/user-web/global/response"
@@ -190,7 +194,7 @@ func Register(c *gin.Context) {
 		return
 	}
 	// 验证码校验
-	value, err := global.Rdb.Get(context.Background(), form.Mobile).Result()
+	value, err := global.RedisClient.Get(context.Background(), form.Mobile).Result()
 	if err != redis.Nil {
 		zap.L().Info("用户注册的手机号码 没有发送验证码或者验证码过期")
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -224,4 +228,96 @@ func Register(c *gin.Context) {
 		"id":    user.Id,
 		"token": token,
 	})
+}
+
+// 用户pk
+func PK(c *gin.Context) {
+	uid, err := userid.GetUid(c)
+	if err != nil {
+		HandlerGrpcErrorToHttp(err, c)
+		return
+	}
+	tp, _ := strconv.Atoi(c.Param("type"))
+
+	findType := userpb.FindType(tp)
+	ch := make(chan queue.UserId)
+	defer close(ch)
+	// 在线匹配
+	if findType == userpb.FindType_Random {
+		// 接受匹配的通知
+		if err := global.UserDivide.Register(queue.UserId(uid), ch); err != nil {
+			// 已经注册
+			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+			return
+		}
+		defer global.UserDivide.UnRegister(queue.UserId(uid))
+	}
+
+	resp, err := global.PKClient.Join(c, &userpb.JoinRequest{
+		Id:       uid,
+		FindType: findType,
+		//TODO: 加入挑战的人的id
+		OtherId: 0,
+	})
+
+	if err != nil {
+		zap.L().Info("pk service 返回错误", zap.Error(err))
+		HandlerGrpcErrorToHttp(err, c)
+		return
+	}
+	fmt.Println(resp)
+	// 在线匹配
+	if findType == userpb.FindType_Random {
+		otherID := <-ch // 获取到其他人的id
+		fmt.Println("%d:获取到其他人的id: %d", uid, otherID)
+		ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
+		if err != nil {
+			fmt.Println("建立websocket 连接失败", err)
+			c.JSON(http.StatusInternalServerError, gin.H{})
+			return
+		}
+		defer ws.Close()
+		//defer ws.Close(websocket.StatusNormalClosure, "")
+		fmt.Println("建立完成")
+		//
+
+		// 建立 socket 连接 建立对局
+		for {
+			//读取ws中的数据
+			select {
+			default:
+				mt, message, err := ws.ReadMessage()
+				if err != nil {
+					ws.Close()
+					return
+				}
+				//TODO: 需要写入别人的通道 用广播弄吧简单点
+				ws.WriteMessage(mt, message)
+			}
+		}
+	}
+}
+
+var upGrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+func JoinParty(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	uid, err := userid.GetUid(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
+		return
+	}
+	_, err = global.PKClient.TakePartIn(c, &userpb.TakePartInRequest{
+		Id:  int32(id),
+		Uid: uid,
+	})
+	if err != nil {
+		HandlerGrpcErrorToHttp(err, c)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "ok"})
 }

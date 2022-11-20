@@ -60,7 +60,6 @@ func readFile(path, fileType string) error {
 			InitConnect()
 			InitJwtVerifier()
 			InitRedis()
-			InitEtcd()
 		}
 	})
 	return err

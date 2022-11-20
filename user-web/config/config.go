@@ -18,8 +18,8 @@ type JWTSettingS struct {
 	Secret         string
 	Issuer         string
 	ExpireMin      time.Duration
-	PublicKeyPath  string
-	PrivateKeyPath string
+	PublicKeyPath  string `yaml:"PublicKeyPath"`
+	PrivateKeyPath string `yaml:"PrivateKeyPath"`
 }
 type RedisSettings struct {
 	Host      string `mapstructure:"Host" json:"host"`

@@ -37,7 +37,7 @@ func SendMessage(c *gin.Context) {
 		return
 	}
 
-	global.Rdb.Set(context.Background(), form.Mobile, code, time.Minute*global.ServerConfig.RedisInfo.ExpireMin)
+	global.RedisClient.Set(context.Background(), form.Mobile, code, time.Minute*global.ServerConfig.RedisInfo.ExpireMin)
 	zap.L().Info("set value", zap.String("mobile", form.Mobile), zap.Int("code", code))
 
 	c.JSON(http.StatusOK, gin.H{

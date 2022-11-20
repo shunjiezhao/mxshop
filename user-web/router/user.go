@@ -18,5 +18,9 @@ func InitUserRouter(engine *gin.RouterGroup) {
 		}
 		group.POST("login", api.PassWordLogin)
 		group.POST("register", api.Register)
+		group.GET("pk/:type", middlewares.JwtToken(), api.PK)
+		// 参加活动 活动id
+		group.GET("join/:id", middlewares.JwtToken(), api.JoinParty)
+
 	}
 }
