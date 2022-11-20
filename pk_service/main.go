@@ -10,9 +10,9 @@ import (
 	"os"
 	"os/signal"
 	"server/pk_service/global"
+	"server/pk_service/handler"
 	"server/pk_service/initialize"
-	"server/shopcart_service/handler"
-	proto "server/shopcart_service/proto/gen/v1/cart"
+	proto "server/pk_service/proto/gen/v1/pk"
 	"syscall"
 )
 
@@ -21,6 +21,7 @@ func main() {
 	initialize.InitDB()
 	initialize.InitRedis()
 	initialize.InitConnect()
+	initialize.InitQueue()
 
 	address := fmt.Sprintf("%s:%d", global.Settings.IP, global.Settings.Port)
 	lis, err := net.Listen("tcp", address)
@@ -34,9 +35,11 @@ func main() {
 	}
 
 	svc := grpc.NewServer()
-	proto.RegisterOrderServer(svc, handler.New(handler.Config{
-		DB:     global.DB,
-		Logger: logger,
+	proto.RegisterPKServer(svc, handler.NewService(&handler.Config{
+		DB:            global.DB,
+		Logger:        logger,
+		UserPublisher: global.UserWaitQueue,
+		//TODO: 实现剩下两个接口
 	}))
 
 	logger.Info("grpc service run start", zap.String("name", "user"), zap.String("address", address))

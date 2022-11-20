@@ -11,6 +11,8 @@ import (
 	"server/pk_service/config"
 	"server/shared/etcd/discovery"
 	"server/shared/etcd/register"
+	"server/shared/queue"
+	"time"
 )
 
 var (
@@ -30,12 +32,21 @@ var (
 
 // redis
 var (
-	RedisPool   *redsync.Redsync
-	RedisClient *redis.Client
+	RedisPool              *redsync.Redsync
+	RedisClient            *redis.Client
+	MaxWaitRedisTime       = time.Second * 3
+	RedisUserBitMapKeyName = "user.id"
+	RedisWaitQueueKeyName  = "user.wait"
+	RedisPartyPrefix       = "party"
 )
 
 var (
 	GoodSrv         proto.GoodsClient
 	InventorySrv    proto3.InventoryClient
 	ServerDiscovery *discovery.ServiceDiscovery
+)
+
+// mq
+var (
+	UserWaitQueue queue.UserPublisher
 )
