@@ -8,9 +8,9 @@ import (
 )
 
 func InitRedis() {
-	client := goredislib.NewClient(&goredislib.Options{
-		Addr: "127.0.0.1:6379",
+	global.RedisClient = goredislib.NewClient(&goredislib.Options{
+		Addr: global.Settings.RedisInfo.Addr,
 	})
-	pool := goredis.NewPool(client) // or, pool := redigo.NewPool(...)
+	pool := goredis.NewPool(global.RedisClient) // or, pool := redigo.NewPool(...)
 	global.RedisPool = redsync.New(pool)
 }

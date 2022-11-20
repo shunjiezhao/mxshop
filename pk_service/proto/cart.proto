@@ -1,0 +1,25 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+option go_package = ".;proto";
+
+
+service PK{
+  // 用户参加
+  rpc Join(JoinRequest) returns (google.protobuf.Empty);
+
+}
+enum FindType {
+  Find_NOSRV = 0;
+//     1. 复仇 查对局表,id,id,time,winner; 如果全胜或者没有对局就返回错误
+    Avengers = 1;
+  //   2. 随机选择 利用 choose 接口
+  Random = 2;
+  //   3. 选择敌人 传入 userid
+  Choose = 3;
+}
+message JoinRequest{
+  int32 id = 1; // user_id
+  FindType find_type = 2;
+  int32 other_id = 3;// 如果 find type 是 3 有效
+}
+

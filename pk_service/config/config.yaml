@@ -1,0 +1,21 @@
+ServiceConfig:
+  IP: 'localhost'
+  Port:  12000
+  SrvName: 'pk_srv'
+  DBConfig:
+    Host: 'localhost'
+    Port: 5432
+    User: 'postgres'
+    Dbname: 'mxshop_pk'
+    Password: 'az123.'
+  EtcdConfig:
+    EndPoints:
+      - 'localhost:2379'
+    Prefix: 'pk_srv'
+    LeaseSec: 5
+  RedisConfig:
+    Addr: '127.0.0.1:6379'
+
+
+
+
