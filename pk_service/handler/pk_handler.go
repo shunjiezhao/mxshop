@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -16,19 +17,26 @@ import (
 
 // 参加活动
 func (P *PKService) Join(ctx context.Context, req *proto.JoinRequest) (*proto.JoinResponse, error) {
+	var (
+		err    error
+		divide []string // 题目列表
+		answer []string // 答案列表
+	)
 	// check user id
 	Uid := req.Id
 	c, cancel := context.WithTimeout(context.Background(), global.MaxWaitRedisTime)
 	defer cancel()
 	if err := P.UserIsExists(c, Uid); err != nil {
-		return nil, err
+		P.logger.Info("user is not exist", zap.Error(err))
+		return nil, status.Errorf(codes.FailedPrecondition, "")
 	}
 	// 现在获取成功
 	switch req.FindType {
 	case proto.FindType_Avengers:
 		// 1. 查询对局表
-	//	获取最近一次且输了的winner id
-	// 对方如果也
+		//	获取最近一次且输了的winner id -> 利用 redis  hash table
+		// 对方如果也
+
 	case proto.FindType_Random:
 		// 随机选在线的用户
 		// 推入等待列表
@@ -36,11 +44,28 @@ func (P *PKService) Join(ctx context.Context, req *proto.JoinRequest) (*proto.Jo
 		P.watcher.Add <- queue.UserId(Uid)
 
 	case proto.FindType_Choose:
-		// 先检查是否存在用户
+		// 先检查用户是否参加活动
+		err := P.UserIsExists(c, req.OtherId)
+		if err != nil {
+			P.logger.Info("user is not exist", zap.Error(err))
+			return nil, status.Errorf(codes.FailedPrecondition, "")
+		}
+		// 用户存在后发起离线挑战
 	}
 	// 返回建立成功开始建立
 	//TODO: 查询题目
-	resp := &proto.JoinResponse{}
+	for i := 0; i < 5; i++ {
+		divide, answer, err = P.Divide(QuestionCnt)
+		if err == nil {
+			break
+		} else {
+			P.logger.Info("获取题目错误")
+		}
+	}
+	resp := &proto.JoinResponse{
+		Question: divide,
+		Answer:   answer,
+	}
 	return resp, nil
 }
 
@@ -70,7 +95,7 @@ func hashUid(Uid int32) int64 {
 	return int64(hash.Sum32()) // uint32 -> int64 is safe
 }
 
-// 设置为
+// 加入活动 设置某位 bit 位1
 func (P *PKService) TakePartIn(c context.Context, req *proto.TakePartInRequest) (*emptypb.Empty, error) {
 	partyKey := fmt.Sprintf("%s:%d", global.RedisPartyPrefix, req.Id)
 	global.RedisClient.SetBit(c, partyKey, hashUid(req.Uid), 1)

@@ -15,13 +15,28 @@ type Choose interface {
 	ChooseOne([]queue.UserId) queue.UserId
 }
 
+type DivideQuestions interface {
+	Divide(cnt int) ([]string, []string, error)
+}
+
+var QuestionCnt int = 10
+
 type PKService struct {
 	db      *gorm.DB
 	logger  *zap.Logger
 	watcher *RedisWatcher
 	Random  Random
 	Choose  Choose
+	DivideQuestions
 	proto.UnimplementedPKServer
+}
+
+type divideQuestion struct {
+}
+
+//TODO:完成题库的题目提取
+func (d *divideQuestion) Divide(cnt int) ([]string, []string, error) {
+	return nil, nil, nil
 }
 
 type Config struct {
@@ -29,6 +44,7 @@ type Config struct {
 	Logger *zap.Logger
 	Random Random
 	Choose Choose
+	DivideQuestions
 	queue.UserPublisher
 }
 
@@ -44,6 +60,12 @@ func NewService(config *Config) *PKService {
 		Ctx:           context.Background(),
 		UserPublisher: config.UserPublisher,
 	}
+	if config.DivideQuestions == nil {
+		s.DivideQuestions = &divideQuestion{}
+	} else {
+		s.DivideQuestions = config.DivideQuestions
+	}
+
 	go s.watcher.Watch()
 	return s
 }

@@ -18,6 +18,7 @@ func (r *RedisWatcher) Watch() {
 		select {
 		case uid := <-r.Add:
 			//TODO: 来人了
+			// 通知有人进来了
 			r.Publish(r.Ctx, uid)
 		case <-r.Ctx.Done():
 			// 结束了

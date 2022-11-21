@@ -28,8 +28,7 @@ message JoinRequest{
 message JoinResponse{
   int32 id = 1;
   repeated string question = 2; // 问题
-  int32 answer = 3; // 答案
-
+  repeated string answer = 3; // 答案 1-a 2-b 3-c 4-d
 }
 
 message CreateResponse{

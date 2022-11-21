@@ -16,7 +16,6 @@ import (
 )
 
 func main() {
-
 	initialize.InitConfig() // 初始化配置
 	initialize.InitDB()
 
