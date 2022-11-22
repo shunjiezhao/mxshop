@@ -10,6 +10,7 @@ import (
 	"server/shared/etcd/discovery"
 	"server/shared/etcd/register"
 	"server/shopcart_service/config"
+	"server/shopcart_service/utils/queue"
 )
 
 var (
@@ -36,4 +37,9 @@ var (
 	GoodSrv         proto.GoodsClient
 	InventorySrv    proto3.InventoryClient
 	ServerDiscovery *discovery.ServiceDiscovery
+)
+
+var (
+	OrderPublisher  *queue.Publisher
+	OrderSubscriber *queue.Subscriber
 )

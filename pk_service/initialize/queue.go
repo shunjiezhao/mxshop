@@ -1,7 +1,6 @@
 package initialize
 
 import (
-	"github.com/streadway/amqp"
 	"server/pk_service/global"
 	"server/pk_service/utils/queue"
 	queue2 "server/shared/queue"

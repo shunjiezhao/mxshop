@@ -14,6 +14,7 @@ import (
 	"server/shopcart_service/global"
 	"server/shopcart_service/model"
 	proto "server/shopcart_service/proto/gen/v1/cart"
+	"server/shopcart_service/utils/queue"
 	"time"
 )
 
@@ -55,8 +56,7 @@ func New(config Config) *OrderService {
 func defaultGenId(id int32) string {
 	now := time.Now()
 	rand.Seed(now.UnixNano())
-	return fmt.Sprintf("%d%d%d%d%d%d%d%d",
-		now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Nanosecond(),
+	return fmt.Sprintf("%d%d%d%d%d%d%d%d", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Nanosecond(),
 		id, rand.Intn(90)+10,
 	)
 }
@@ -129,6 +129,7 @@ func (o *OrderService) Create(ctx context.Context, req *proto.OrderRequest) (*pr
 	// 2. 查询库存容量
 	// 3. 查询商品金额
 	// 4. 库存扣减
+	// 1. 预扣减
 	var order proto.OrderInfoResponse
 	order.UserId = req.UserId
 	var carts []model.ShoppingCart
@@ -167,16 +168,7 @@ func (o *OrderService) Create(ctx context.Context, req *proto.OrderRequest) (*pr
 			Num:     cnt,
 		})
 	}
-
-	_, err = global.InventorySrv.Sell(context.Background(), &proto3.SellInfo{
-		GoodsInfo: invReq,
-	})
-	//TODO: 分布式事务
-	if err != nil {
-		return nil, status.Errorf(codes.ResourceExhausted, "扣减库存失败")
-	}
-	tx := o.db.Begin()
-	// 订单号 时间桌
+	// 前面是所有的读
 	orderModel := &model.OrderInfo{
 		User:         req.UserId,
 		OrderSn:      o.GenId(req.UserId),
@@ -186,6 +178,26 @@ func (o *OrderService) Create(ctx context.Context, req *proto.OrderRequest) (*pr
 		SingerMobile: req.RcvInfo.Mobile,
 		Post:         req.RcvInfo.Post,
 	}
+	sellInfo := proto3.SellInfo{
+		GoodsInfo: invReq,
+		OrderSn:   orderModel.OrderSn,
+	}
+
+	err = global.OrderPublisher.Publish(ctx, queue.OrderDelayQKey, &queue.OrderInfo{
+		OrderSn:   orderModel.OrderSn,
+		GoodsInfo: invReq,
+		Test:      time.Now().String(),
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.ResourceExhausted, "创建订单失败")
+	}
+
+	_, err = global.InventorySrv.Sell(context.Background(), &sellInfo)
+	if err != nil {
+		return nil, status.Errorf(codes.ResourceExhausted, "扣减库存失败")
+	}
+	tx := o.db.Begin()
+	// 订单号 时间桌
 	tx.Save(orderModel)
 	// 加入 orderGoods
 	for _, orderGood := range orderGoods {
@@ -213,7 +225,6 @@ func (o *OrderService) Create(ctx context.Context, req *proto.OrderRequest) (*pr
 		RcvInfo: order.RcvInfo,
 	}
 	return resp, nil
-
 }
 
 // 管理员 和 用户通用
@@ -290,4 +301,23 @@ func (o *OrderService) UpdateOrderStatus(ctx context.Context, req *proto.OrderSt
 		return nil, status.Errorf(codes.Internal, "更新失败")
 	}
 	return &emptypb.Empty{}, nil
+}
+
+func (o *OrderService) Watch() {
+	// 订单释放
+	for {
+		select {
+		case info := <-global.OrderSubscriber.Finish:
+			//完成支付
+			o.db.Where(&model.OrderInfo{OrderSn: info.OrderSn, Status: "PAYING"}).Select("Status",
+				"IsDelete").Updates(model.OrderInfo{Status: "SUCCESS", BaseModel: model.BaseModel{IsDeleted: true}})
+		case info := <-global.OrderSubscriber.Release:
+			// 释放订单
+			o.logger.Info("释放订单", zap.String("ordersn", info.OrderSn))
+			o.db.Where(&model.OrderInfo{OrderSn: info.OrderSn, Status: "PAYING"}).Select("Status",
+				"IsDelete").Updates(model.OrderInfo{Status: "TRADE_CLOSED",
+				BaseModel: model.BaseModel{IsDeleted: true}})
+		}
+	}
+
 }

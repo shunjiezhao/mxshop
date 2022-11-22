@@ -32,6 +32,7 @@ func main() {
 	service := handler.UserService{
 		Dao: dao.New(global.DB),
 	}
+
 	for i := 1; i < 10; i++ {
 		service.CreateUser(context.Background(), &userpb.CreateUserRequest{
 			Mobile:   fmt.Sprintf("1334744689%d", i),
@@ -51,6 +52,7 @@ func main() {
 	go initialize.InitEtcd(logger)
 	log.Fatalln(svc.Serve(lis))
 }
+
 func NewZapLogger() (*zap.Logger, error) {
 	cfg := zap.NewDevelopmentConfig()
 	cfg.EncoderConfig.TimeKey = ""
