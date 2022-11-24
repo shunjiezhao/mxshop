@@ -6,7 +6,7 @@ ServiceConfig:
     Host: 'localhost'
     Port: 5432
     User: 'postgres'
-    Dbname: 'mxshop'
+    Dbname: 'mxshop_user'
     Password: 'az123.'
   EtcdConfig:
     EndPoints:

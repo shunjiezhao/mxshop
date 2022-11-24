@@ -13,4 +13,5 @@ func InitRedis() {
 	})
 	pool := goredis.NewPool(client) // or, pool := redigo.NewPool(...)
 	global.RedisPool = redsync.New(pool)
+	global.Rdb = client
 }

@@ -3,17 +3,16 @@ package testing
 import (
 	"context"
 	"fmt"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
+	"github.com/docker/go-connections/nat"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
 	"server/goods_service/model"
 	"testing"
 	"time"
-
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/client"
-	"github.com/docker/go-connections/nat"
 )
 
 const (
@@ -23,7 +22,7 @@ const (
 
 var Dsn string
 
-const defaultMongoURI = "host=localhost user=postgres dbname=mxshop password=az123. port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+const defaultMongoURI = `host=localhost user=postgres dbname=mxshop_goods password=az123. port=5432 sslmode=disable TimeZone=Asia/Shanghai`
 
 func RunWithMongoInDocker(m *testing.M) int {
 	cli, err := client.NewEnvClient()
@@ -106,5 +105,5 @@ func NewClient(c context.Context) (*gorm.DB, error) {
 	return DB, nil
 }
 func NewDefaultClient(c context.Context) (*gorm.DB, error) {
-	return gorm.Open(postgres.Open(Dsn), &gorm.Config{})
+	return gorm.Open(postgres.Open(defaultMongoURI), &gorm.Config{})
 }

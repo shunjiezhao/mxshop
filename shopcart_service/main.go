@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -21,6 +22,7 @@ func main() {
 	initialize.InitDB()
 	initialize.InitRedis()
 	initialize.InitConnect()
+	initialize.InitQueue()
 
 	address := fmt.Sprintf("%s:%d", global.Settings.IP, global.Settings.Port)
 	lis, err := net.Listen("tcp", address)
@@ -34,10 +36,13 @@ func main() {
 	}
 
 	svc := grpc.NewServer()
-	proto.RegisterOrderServer(svc, handler.New(handler.Config{
+	service := handler.New(handler.Config{
 		DB:     global.DB,
 		Logger: logger,
-	}))
+	})
+	proto.RegisterOrderServer(svc, service)
+	//
+	go service.Watch(context.Background())
 
 	logger.Info("grpc service run start", zap.String("name", "user"), zap.String("address", address))
 

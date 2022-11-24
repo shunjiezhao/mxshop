@@ -21,6 +21,7 @@ var (
 	OrderDelayQKey   = OrderPrefix + "delay.order"   // 当创建成功向消息队列发送一个延时任务
 	OrderReleaseQKey = OrderPrefix + "release.order" // 释放订单
 	OrderFinishQKey  = OrderPrefix + "finish.order"
+	DelayOrderTimeMs = 3000 // 3000ms
 )
 
 type Publisher struct {
@@ -44,6 +45,7 @@ func (p *Publisher) Publish(c context.Context, key string, info *OrderInfo) erro
 		log.Println("消息未发送成功， json编码失败:", err.Error())
 		return err
 	}
+	fmt.Println(key, ":发送消息 ", string(b))
 	return p.ch.PublishWithContext(c,
 		p.exchange, // exchange
 		key,        // routing key
@@ -64,15 +66,15 @@ func NewPublisher(conn *amqp.Connection) (*Publisher, error) {
 	}
 	// 生成 交换
 	err = deTopicExchange(ch, OrderExName)
-
 	if err != nil {
 		panic(err)
 	}
 
 	// 生成订单取消的延迟队列
+
 	q, err := declareQueue(ch, OrderDelayQ, map[string]interface{}{
 		//TODO:这里需要参数化
-		"x-message-ttl":             3000,             // 这是 ttl的时间
+		"x-message-ttl":             DelayOrderTimeMs, // 这是 ttl的时间
 		"x-dead-letter-exchange":    OrderExName,      // 声明死信队列
 		"x-dead-letter-routing-key": OrderReleaseQKey, // 定时检查释放
 	})

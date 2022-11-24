@@ -22,7 +22,7 @@ var (
 
 func insertHelp() *gorm.DB {
 	var i, j int32
-	db, err := Potesting.NewClient(context.Background())
+	db, err := Potesting.NewDefaultClient(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -52,7 +52,7 @@ func insertHelp() *gorm.DB {
 			Name:      brandsName[i-1],
 		})
 	}
-	db.CreateInBatches(brands, 100)
+	fmt.Println(db.CreateInBatches(brands, 100).Error)
 
 	// 创建商标目录表
 	// (3-a,b1) (3-a,b2) (3-b,b3) (3-b, b4)
@@ -68,7 +68,7 @@ func insertHelp() *gorm.DB {
 			BrandsID:   i + 2,
 		})
 	}
-	db.CreateInBatches(c2b, 100)
+	fmt.Println(db.CreateInBatches(c2b, 100).Error)
 
 	// 创建商品
 	var goods []model.Goods
@@ -82,7 +82,7 @@ func insertHelp() *gorm.DB {
 			ShopPrice:  float32(i * 10),
 		})
 	}
-	db.CreateInBatches(goods, 100)
+	fmt.Println(db.CreateInBatches(goods, 100).Error)
 	return db
 }
 func TestGetGoods(t *testing.T) {
@@ -350,4 +350,8 @@ func TestBatchGoods(t *testing.T) {
 			t.Errorf("%s: %v", cc.name, err)
 		}
 	}
+}
+
+func TestInsert(t *testing.T) {
+	insertHelp()
 }

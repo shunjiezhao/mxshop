@@ -73,6 +73,7 @@ func (P *PKService) Create(context.Context, *proto.CreateRequest) (*proto.Create
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
 
+//用户是否参加活动
 func (P *PKService) UserIsExists(c context.Context, Uid int32) error {
 	//TODO: 这里需要 活动号
 	if ok, err := global.RedisClient.GetBit(c, global.RedisPartyPrefix+":1", int64(hashUid(Uid))).Result(); err != nil || ok == 0 {

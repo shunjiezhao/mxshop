@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -20,6 +21,7 @@ func main() {
 	initialize.InitConfig() // 初始化配置;
 	initialize.InitDB()
 	initialize.InitRedis()
+	initialize.InitQueue()
 
 	address := fmt.Sprintf("%s:%d", global.Settings.IP, global.Settings.Port)
 	lis, err := net.Listen("tcp", address)
@@ -34,10 +36,14 @@ func main() {
 	}
 	logger.Info("grpc service run start", zap.String("name", "user"), zap.String("address", address))
 
-	proto.RegisterInventoryServer(svc, handler.NewService(&handler.InventorySrvConfig{
-		Logger: logger,
-		DB:     global.DB,
-	}))
+	service := handler.NewService(&handler.InventorySrvConfig{
+		Logger:     logger,
+		DB:         global.DB,
+		Publisher:  global.StockRebackPublisher,
+		Subscriber: global.StockRebackSubscriber,
+	})
+	proto.RegisterInventoryServer(svc, service)
+	go service.WatchStockReback(context.Background())
 
 	var etcClose io.Closer
 	etcClose = initialize.InitEtcd(logger)

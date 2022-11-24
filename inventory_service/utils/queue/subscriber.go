@@ -38,8 +38,8 @@ func NewSubscriber(conn *amqp.Connection) (*Subscriber, error) {
 	}
 	finish, err := ch.Consume(
 		q.Name,          // queue
-		"stock.release", // consumer
-		true,            // auto ack
+		"stock.release", //
+		false,           // auto ack
 		false,           // exclusive
 		false,           // no local
 		false,           // no wait
@@ -47,13 +47,15 @@ func NewSubscriber(conn *amqp.Connection) (*Subscriber, error) {
 	)
 
 	go func() {
+		var info OrderInfo
 		for msg := range finish {
-			var info OrderInfo
 			err := json.Unmarshal(msg.Body, &info)
 			if err != nil {
 				log.Println("消息未接受成功， json编码失败:", err.Error())
 				continue
 			}
+
+			log.Println("消息接受成功", string(msg.Body))
 			sub.Release <- info
 		}
 	}()

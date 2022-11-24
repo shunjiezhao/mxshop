@@ -57,11 +57,3 @@ type StockSellDetail struct {
 func (StockSellDetail) TableName() string {
 	return "stockselldetail"
 }
-
-//type InventoryHistory struct {
-//	user int32
-//	goods int32
-//	nums int32
-//	order int32
-//	status int32 //1. 表示库存是预扣减， 幂等性， 2. 表示已经支付
-//}

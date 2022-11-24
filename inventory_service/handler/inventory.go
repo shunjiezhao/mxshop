@@ -11,24 +11,32 @@ import (
 	"server/inventory_service/global"
 	"server/inventory_service/model"
 	proto "server/inventory_service/proto/gen/v1/inventory"
+	"server/inventory_service/utils/queue"
+	"time"
 )
 
 //InventoryService
 type InventoryService struct {
-	logger *zap.Logger
-	db     *gorm.DB
+	logger     *zap.Logger
+	db         *gorm.DB
+	Publisher  *queue.Publisher
+	Subscriber *queue.Subscriber
 	proto.UnimplementedInventoryServer
 }
 
 type InventorySrvConfig struct {
-	Logger *zap.Logger
-	DB     *gorm.DB
+	Logger     *zap.Logger
+	DB         *gorm.DB
+	Publisher  *queue.Publisher
+	Subscriber *queue.Subscriber
 }
 
-func NewService(config *InventorySrvConfig) proto.InventoryServer {
+func NewService(config *InventorySrvConfig) *InventoryService {
 	return &InventoryService{
-		db:     config.DB,
-		logger: config.Logger,
+		db:         config.DB,
+		logger:     config.Logger,
+		Publisher:  config.Publisher,
+		Subscriber: config.Subscriber,
 	}
 }
 
@@ -115,9 +123,17 @@ func (i *InventoryService) Sell(ctx context.Context, req *proto.SellInfo) (*empt
 		}
 	}
 	tx.Commit() // 需要自己手动提交操作
+	// 传递自动解锁消息 避免订单系统宕机
+	global.StockRebackPublisher.Publish(ctx, queue.StockReleaseQKey, queue.OrderInfo{
+		OrderSn:   req.OrderSn,
+		GoodsInfo: req.GoodsInfo,
+		Test:      time.Now().String(),
+	})
 	return &emptypb.Empty{}, nil
 }
 func (i *InventoryService) Reback(ctx context.Context, req *proto.SellInfo) (*emptypb.Empty, error) {
+	//TODO：加入缓存避免一直访问订单号 stock:reback:orderSn expire 30min
+
 	// 1. 订单超时归还
 	// 2. 订单创建失败，归还之前扣减的
 	// 3. 手动归还
@@ -135,4 +151,42 @@ func (i *InventoryService) Reback(ctx context.Context, req *proto.SellInfo) (*em
 	}
 	tx.Commit()
 	return &emptypb.Empty{}, nil
+}
+
+//存在返回1
+var judgeScript = `
+if (redis.call('exists', KEYS[1]) == 1) then
+    return 1
+else
+    redis.call('SET', KEYS[1], ARGV[1])
+    redis.call('EXPIRE', KEYS[1], ARGV[2])
+    return 0
+end
+`
+
+func (i *InventoryService) WatchStockReback(ctx context.Context) {
+	for {
+		select {
+		case msg := <-i.Subscriber.Release:
+			// 如果返回 0 则表示没有释放过，那我们需要释放
+			val, err := global.Rdb.Eval(ctx, judgeScript, []string{"order:AutoRelease:" + msg.OrderSn},
+				1, 300).Result()
+			if err != nil {
+				i.logger.Info("脚本返回错误", zap.Error(err))
+				break
+			}
+			fmt.Println(val, err)
+			if val.(int64) == 1 {
+				fmt.Println(val)
+				i.logger.Info("库存已经被归还")
+				break
+			}
+			i.logger.Info("得到释放库存的消息", zap.String("order_sn", msg.OrderSn))
+			_, _ = i.Reback(ctx, &proto.SellInfo{
+				GoodsInfo: msg.GoodsInfo,
+				OrderSn:   msg.OrderSn,
+			})
+		}
+	}
+
 }

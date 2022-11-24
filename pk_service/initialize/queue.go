@@ -1,6 +1,7 @@
 package initialize
 
 import (
+	amqp "github.com/rabbitmq/amqp091-go"
 	"server/pk_service/global"
 	"server/pk_service/utils/queue"
 	queue2 "server/shared/queue"

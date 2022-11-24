@@ -25,5 +25,4 @@ func InitEtcd(logger *zap.Logger) io.Closer {
 	logger.Info("【Etcd】: 初始化成功")
 
 	return ser
-
 }

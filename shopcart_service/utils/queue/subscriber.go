@@ -2,6 +2,7 @@ package queue
 
 import (
 	"encoding/json"
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 )
@@ -51,6 +52,8 @@ func NewSubscriber(conn *amqp.Connection) (*Subscriber, error) {
 				log.Println("消息未接受成功， json编码失败:", err.Error())
 				continue
 			}
+			fmt.Println("接受订单完成消息", string(msg.Body))
+
 			sub.Finish <- info
 		}
 	}()
@@ -80,10 +83,13 @@ func NewSubscriber(conn *amqp.Connection) (*Subscriber, error) {
 		for msg := range release {
 			var info OrderInfo
 			err := json.Unmarshal(msg.Body, &info)
+
 			if err != nil {
 				log.Println("消息未接受成功， json编码失败:", err.Error())
 				continue
 			}
+
+			fmt.Println("发送释放消息 ", string(msg.Body))
 			sub.Release <- info
 		}
 	}()

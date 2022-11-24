@@ -4,7 +4,7 @@ import (
 	goredislib "github.com/go-redis/redis/v8"
 	"github.com/go-redsync/redsync/v4"
 	"github.com/go-redsync/redsync/v4/redis/goredis/v8"
-	"server/pk_service/global"
+	"server/shopcart_service/global"
 )
 
 func InitRedis() {
@@ -13,4 +13,5 @@ func InitRedis() {
 	})
 	pool := goredis.NewPool(client) // or, pool := redigo.NewPool(...)
 	global.RedisPool = redsync.New(pool)
+	global.Rdb = client
 }

@@ -177,6 +177,7 @@ func (o *OrderService) Create(ctx context.Context, req *proto.OrderRequest) (*pr
 		SignerName:   req.RcvInfo.RcvName,
 		SingerMobile: req.RcvInfo.Mobile,
 		Post:         req.RcvInfo.Post,
+		Status:       model.PAYING,
 	}
 	sellInfo := proto3.SellInfo{
 		GoodsInfo: invReq,
@@ -216,11 +217,12 @@ func (o *OrderService) Create(ctx context.Context, req *proto.OrderRequest) (*pr
 		o.logger.Info("无法清除购物车状态", zap.Error(err))
 		return nil, status.Errorf(codes.Internal, "")
 	}
+
 	tx.Commit()
 	resp := &proto.OrderInfoResponse{
 		Id:      orderModel.ID, // 插入后订单的id
 		UserId:  req.UserId,
-		OrderSn: order.OrderSn,
+		OrderSn: orderModel.OrderSn,
 		Total:   order.Total,
 		RcvInfo: order.RcvInfo,
 	}
@@ -303,21 +305,53 @@ func (o *OrderService) UpdateOrderStatus(ctx context.Context, req *proto.OrderSt
 	return &emptypb.Empty{}, nil
 }
 
-func (o *OrderService) Watch() {
+func (o *OrderService) PayOrder(ctx context.Context, req *proto.PayOrderRequest) (*proto.PayOrderResponse, error) {
+	err := global.OrderPublisher.Publish(ctx, queue.OrderFinishQKey, &queue.OrderInfo{
+		OrderSn: req.OrderSn,
+		Test:    time.Now().String(),
+	})
+	resp := &proto.PayOrderResponse{Msg: "OK"}
+	if err != nil {
+		resp.Msg = err.Error()
+		return resp, err
+	}
+	return resp, nil
+}
+
+func (o *OrderService) Watch(ctx context.Context) {
 	// 订单释放
 	for {
 		select {
+		case <-ctx.Done():
+			if _, ok := ctx.Value("close").(int); ok {
+				close(global.OrderSubscriber.Finish)
+				close(global.OrderSubscriber.Release)
+			}
+			return
 		case info := <-global.OrderSubscriber.Finish:
 			//完成支付
-			o.db.Where(&model.OrderInfo{OrderSn: info.OrderSn, Status: "PAYING"}).Select("Status",
-				"IsDelete").Updates(model.OrderInfo{Status: "SUCCESS", BaseModel: model.BaseModel{IsDeleted: true}})
+			o.logger.Info("支付订单成功", zap.String("ordersn", info.OrderSn))
+			global.Rdb.Set(ctx, "order:finish:"+info.OrderSn, 1, time.Duration(queue.DelayOrderTimeMs)*time.Millisecond)
+			// 删除未支付订单序列
+			o.db.Where(&model.OrderInfo{OrderSn: info.OrderSn, Status: model.PAYING}).Select("Status",
+				"IsDelete").Updates(model.OrderInfo{Status: model.TRADE_SUCCESS, BaseModel: model.BaseModel{IsDeleted: true}})
 		case info := <-global.OrderSubscriber.Release:
+			res, err := global.Rdb.Get(ctx, "order:finish:"+info.OrderSn).Result()
+			if err != nil {
+				o.logger.Info("得到key失败", zap.Error(err))
+				break
+			}
+			if res == "1" {
+				o.logger.Info("订单已经支付成功", zap.Error(err))
+				break
+			}
 			// 释放订单
 			o.logger.Info("释放订单", zap.String("ordersn", info.OrderSn))
-			o.db.Where(&model.OrderInfo{OrderSn: info.OrderSn, Status: "PAYING"}).Select("Status",
-				"IsDelete").Updates(model.OrderInfo{Status: "TRADE_CLOSED",
+			//TODO:利用Redis优化，查询订单ordersn是否未支付的消息队列里面
+			result := o.db.Where(&model.OrderInfo{OrderSn: info.OrderSn, Status: "PAYING"}).Select("Status",
+				"IsDelete").Updates(model.OrderInfo{Status: model.TRADE_CLOSED,
 				BaseModel: model.BaseModel{IsDeleted: true}})
+			fmt.Println(result)
 		}
 	}
-
 }

@@ -3,6 +3,7 @@ package global
 import (
 	"crypto/md5"
 	"github.com/anaskhan96/go-password-encoder"
+	"github.com/go-redis/redis/v8"
 	"github.com/go-redsync/redsync/v4"
 	"gorm.io/gorm"
 	proto "server/goods_service/api/gen/v1/goods"
@@ -31,6 +32,7 @@ var (
 // redis
 var (
 	RedisPool *redsync.Redsync
+	Rdb       *redis.Client
 )
 
 var (
