@@ -4,6 +4,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
 	"io/ioutil"
+	"log"
 	"os"
 	"time"
 	"web-api/user-web/global"
@@ -14,7 +15,7 @@ func InitJwtVerifier() {
 	pbBytes := readKey(global.ServerConfig.JwtInfo.PublicKeyPath)
 	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(pbBytes)
 	if err != nil {
-		zap.L().Fatal("can not ParseRSAPublicKeyFromPEM", zap.Error(err))
+		log.Fatal("can not ParseRSAPublicKeyFromPEM", zap.Error(err))
 	}
 	global.JWTTokenVerifier = &token.JWTTokenVerifier{
 		PublicKey: publicKey,
@@ -22,7 +23,7 @@ func InitJwtVerifier() {
 	pbBytes = readKey(global.ServerConfig.JwtInfo.PrivateKeyPath)
 	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(pbBytes)
 	if err != nil {
-		zap.L().Fatal("can not ParseRSAPrivateKeyFromPEM", zap.Error(err))
+		log.Fatal("can not ParseRSAPrivateKeyFromPEM", zap.Error(err))
 	}
 	global.JwtTokenGen = token.NewJWTokenGen(global.ServerConfig.JwtInfo.Issuer,
 		(global.ServerConfig.JwtInfo.ExpireMin * time.Minute),

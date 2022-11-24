@@ -30,7 +30,7 @@ func TestJWTTokenVerifier_Verify(t *testing.T) {
 		token      string
 		now        time.Time
 		wantName   string
-		wantUserId uint32
+		wantUserId int32
 		wantErr    bool
 	}{
 		{

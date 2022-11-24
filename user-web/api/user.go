@@ -20,6 +20,7 @@ import (
 	"web-api/user-web/global"
 	"web-api/user-web/global/response"
 	userpb "web-api/user-web/proto"
+	"web-api/user-web/utils/divide"
 	"web-api/user-web/utils/token"
 )
 
@@ -71,6 +72,9 @@ func HandlerGrpcErrorToHttp(err error, c *gin.Context) {
 		}
 	}
 }
+
+//TODO: 配置话
+var testTime = time.Second * 5
 
 func GetUserList(ctx *gin.Context) {
 	// 通过 etcd 获取 服务地址
@@ -126,6 +130,7 @@ func PassWordLogin(c *gin.Context) {
 		})
 		return
 	}
+
 	if verify := store.Verify(loginForm.CaptchaId, loginForm.Captcha, true); !verify && !global.ServerConfig.Debug {
 		c.JSON(http.StatusBadRequest, gin.H{"captcha": "验证码错误"})
 		return
@@ -166,12 +171,16 @@ func PassWordLogin(c *gin.Context) {
 			})
 			return
 		}
+		_, err = global.JWTTokenVerifier.Verify(token)
+		if err != nil {
+			fmt.Println("token err ", err)
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"id":    user.Id,
 			"token": token,
 			"msg":   "登陆成功",
 		})
-		return
 	} else {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"msg": "密码错误",
@@ -224,6 +233,7 @@ func Register(c *gin.Context) {
 		return
 	}
 	token, err := global.JwtTokenGen.GenerateToken(user.NickName, user.Id, user.Role)
+
 	c.JSON(http.StatusOK, gin.H{
 		"id":    user.Id,
 		"token": token,
@@ -240,17 +250,28 @@ func PK(c *gin.Context) {
 	tp, _ := strconv.Atoi(c.Param("type"))
 
 	findType := userpb.FindType(tp)
-	ch := make(chan queue.UserId)
-	defer close(ch)
+
+	ch := make(chan *divide.Result)
+	var clean func()
+	recvMsg := make(chan []byte)
+
 	// 在线匹配
 	if findType == userpb.FindType_Random {
 		// 接受匹配的通知
-		if err := global.UserDivide.Register(queue.UserId(uid), ch); err != nil {
+		if err := global.UserDivide.Register(queue.UserId(uid), ch, recvMsg); err != nil {
 			// 已经注册
 			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 			return
 		}
-		defer global.UserDivide.UnRegister(queue.UserId(uid))
+		clean = func() {
+			fmt.Println("开始clean")
+			close(ch)
+			close(recvMsg)
+			global.UserDivide.UnRegister(queue.UserId(uid))
+		}
+	} else {
+		defer close(ch)
+		defer close(recvMsg)
 	}
 
 	resp, err := global.PKClient.Join(c, &userpb.JoinRequest{
@@ -268,8 +289,11 @@ func PK(c *gin.Context) {
 	fmt.Println(resp)
 	// 在线匹配
 	if findType == userpb.FindType_Random {
-		otherID := <-ch // 获取到其他人的id
-		fmt.Println("%d:获取到其他人的id: %d", uid, otherID)
+		result := <-ch // 获取到其他人的id
+		fmt.Println("%d:获取到 result %v", result)
+		OtherId := result.OtherID
+		// 关闭管道 + 注销用户
+		defer clean()
 		ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
 			fmt.Println("建立websocket 连接失败", err)
@@ -277,22 +301,41 @@ func PK(c *gin.Context) {
 			return
 		}
 		defer ws.Close()
-		//defer ws.Close(websocket.StatusNormalClosure, "")
 		fmt.Println("建立完成")
-		//
+		ctx, cancel := context.WithTimeout(context.Background(), testTime)
+		defer cancel()
 
 		// 建立 socket 连接 建立对局
 		for {
 			//读取ws中的数据
 			select {
+			case <-ctx.Done():
+				// 对局结束
+				// 发送分数 比较 并 发送结果给 gin
 			default:
-				mt, message, err := ws.ReadMessage()
+				// 写管道
+				go func(recvMsg chan []byte) {
+					fmt.Println(uid, "：开启监听websocket")
+					for {
+						select {
+						case msg := <-recvMsg:
+							//TODO: 可以写成抢答
+							ws.WriteMessage(1, msg)
+						case <-ctx.Done():
+							return
+						}
+					}
+					fmt.Println("end")
+				}(recvMsg)
+				_, message, err := ws.ReadMessage()
 				if err != nil {
-					ws.Close()
 					return
 				}
-				//TODO: 需要写入别人的通道 用广播弄吧简单点
-				ws.WriteMessage(mt, message)
+				// 写两次
+				fmt.Println(uid, "->", OtherId, message, " ", recvMsg)
+
+				global.UserDivide.SendMsg(OtherId, message)
+				fmt.Println("send success")
 			}
 		}
 	}

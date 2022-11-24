@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"web-api/good-web/utils/token"
-	"web-api/shop_cart-web/api/cart"
+	uid2 "web-api/shared/userid"
 	"web-api/shop_cart-web/forms"
 	"web-api/shop_cart-web/global"
 	"web-api/shop_cart-web/proto"
@@ -14,7 +14,7 @@ import (
 )
 
 func List(c *gin.Context) {
-	uid, err := cart.GetUid(c)
+	uid, err := uid2.GetUid(c)
 	if err != nil {
 		return
 	}
@@ -62,7 +62,7 @@ func List(c *gin.Context) {
 	c.JSON(http.StatusOK, reMap)
 }
 func New(c *gin.Context) {
-	uid, err := cart.GetUid(c)
+	uid, err := uid2.GetUid(c)
 	if err != nil {
 		return
 	}
@@ -87,7 +87,8 @@ func New(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"id": rsp.Id,
+		"id":  rsp.Id,
+		"url": global.ServerConfig.GinAddr + "/v1/order/pay/" + rsp.OrderSn,
 	})
 }
 func Detail(c *gin.Context) {
@@ -99,7 +100,7 @@ func Detail(c *gin.Context) {
 		return
 	}
 
-	uid, err := cart.GetUid(c)
+	uid, err := uid2.GetUid(c)
 	if err != nil {
 		api.HandleValidatorError(c, err)
 		return
@@ -135,4 +136,18 @@ func Detail(c *gin.Context) {
 	}
 	reMap["goods"] = goodsList
 	c.JSON(http.StatusOK, reMap)
+}
+func Pay(c *gin.Context) {
+	orderSn := c.Param("ordersn")
+	resp, err := global.OrderClient.PayOrder(c, &proto.PayOrderRequest{OrderSn: orderSn})
+	if err != nil {
+		zap.L().Info("订单支付失败请重试")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"msg": resp.Msg,
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"msg": resp.Msg,
+	})
 }

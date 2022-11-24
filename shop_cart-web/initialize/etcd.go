@@ -2,7 +2,7 @@ package initialize
 
 import (
 	"google.golang.org/grpc/resolver"
-	"web-api/share/etcd/discovery"
+	"web-api/shared/etcd/discovery"
 	"web-api/shop_cart-web/global"
 )
 

@@ -40,6 +40,7 @@ var (
 
 // msg queue
 var (
-	UserSubscriber queue.UserSubscriber
-	UserDivide     *divide.UserDivide
+	UserEnterSubscriber    queue.UserSubscriber
+	UserCompleteSubscriber queue.UserSubscriber
+	UserDivide             *divide.UserDivide
 )

@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc/resolver"
 	"web-api/good-web/global"
 	"web-api/good-web/proto"
-	"web-api/share/etcd/discovery"
+	"web-api/shared/etcd/discovery"
 )
 
 // 连接grpc

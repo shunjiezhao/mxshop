@@ -16,12 +16,14 @@ require (
 	github.com/go-playground/validator/v10 v10.10.0
 	github.com/go-redis/redis/v9 v9.0.0-rc.1
 	github.com/golang-jwt/jwt/v4 v4.4.2
+	github.com/gorilla/websocket v1.5.0
 	github.com/mojocn/base64Captcha v1.3.5
 	github.com/spf13/viper v1.7.1
+	github.com/streadway/amqp v1.0.0
 	go.etcd.io/etcd/api/v3 v3.5.0
 	go.etcd.io/etcd/client/v3 v3.5.0
-	google.golang.org/grpc v1.40.0
 	go.uber.org/zap v1.23.0
+	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.28.1
 )
 
@@ -78,6 +80,7 @@ require (
 	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

@@ -6,7 +6,7 @@ import (
 	"web-api/good-web/config"
 	goodpb "web-api/good-web/proto"
 	"web-api/good-web/utils/token"
-	"web-api/share/etcd/discovery"
+	"web-api/shared/etcd/discovery"
 )
 
 var (

@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/resolver"
 	proto2 "web-api/good-web/proto"
-	"web-api/share/etcd/discovery"
+	"web-api/shared/etcd/discovery"
 	"web-api/shop_cart-web/global"
 	"web-api/shop_cart-web/proto"
 )

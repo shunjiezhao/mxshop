@@ -30,5 +30,5 @@ func InitConnect() {
 		return
 	}
 	global.PKClient = userpb.NewPKClient(conn)
-	global.UserDivide = divide.NewDivide(global.PKClient, global.UserSubscriber)
+	global.UserDivide = divide.NewDivide(global.PKClient, global.UserEnterSubscriber, global.UserCompleteSubscriber)
 }

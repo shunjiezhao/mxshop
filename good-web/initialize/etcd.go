@@ -3,7 +3,7 @@ package initialize
 import (
 	"google.golang.org/grpc/resolver"
 	"web-api/good-web/global"
-	"web-api/share/etcd/discovery"
+	"web-api/shared/etcd/discovery"
 )
 
 func InitEtcd() {

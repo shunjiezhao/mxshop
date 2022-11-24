@@ -4,7 +4,7 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-redis/redis/v9"
 	proto2 "web-api/good-web/proto"
-	"web-api/share/etcd/discovery"
+	"web-api/shared/etcd/discovery"
 	"web-api/shop_cart-web/config"
 	"web-api/shop_cart-web/proto"
 	"web-api/shop_cart-web/utils/token"

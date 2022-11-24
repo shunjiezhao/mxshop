@@ -6,22 +6,15 @@ import (
 	"net/http"
 	"strconv"
 	proto2 "web-api/good-web/proto"
+	uid2 "web-api/shared/userid"
 	"web-api/shop_cart-web/api"
 	"web-api/shop_cart-web/forms"
 	"web-api/shop_cart-web/global"
 	"web-api/shop_cart-web/proto"
 )
 
-func GetUid(c *gin.Context) (int32, error) {
-	uid, exists := c.Get("user_id")
-	if !exists {
-		api.HandleValidatorError(c, fmt.Errorf("user-id not exist"))
-		return 0, fmt.Errorf("")
-	}
-	return uid.(int32), nil
-}
 func List(c *gin.Context) {
-	uid, err := GetUid(c)
+	uid, err := uid2.GetUid(c)
 	if err != nil {
 		return
 	}
@@ -92,7 +85,7 @@ func Delete(c *gin.Context) {
 
 }
 func New(c *gin.Context) {
-	uid, err := GetUid(c)
+	uid, err := uid2.GetUid(c)
 	if err != nil {
 		return
 	}
@@ -115,12 +108,12 @@ func New(c *gin.Context) {
 	data := gin.H{}
 	data["data"] = cart
 	c.JSON(http.StatusOK, data)
-
+	fmt.Println("create success")
 }
 
 func Update(c *gin.Context) {
 	gid, _ := strconv.Atoi(c.Param("id"))
-	uid, err := GetUid(c)
+	uid, err := uid2.GetUid(c)
 	if err != nil {
 		return
 	}

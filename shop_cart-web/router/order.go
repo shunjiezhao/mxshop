@@ -14,5 +14,6 @@ func InitOrderRouter(engine *gin.RouterGroup) {
 		group.GET("list", middlewares.IsAdmin(), order.List) // 订单列表
 		group.POST("", order.New)                            //新建订单
 		group.GET("/:id", order.Detail)                      // 订单详情
+		group.GET("pay/:ordersn", order.Pay)
 	}
 }

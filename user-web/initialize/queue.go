@@ -16,9 +16,13 @@ func InitQueue(logger *zap.Logger) {
 	if err != nil {
 		panic(err)
 	}
-	global.UserSubscriber, err = queue.NewSubscriber(amqpConn, queue2.UserQueueExchangeName, logger)
+	global.UserEnterSubscriber, err = queue.NewSubscriber(amqpConn, queue2.UserEnterQExName, logger)
 	if err != nil {
 		panic(err)
 	}
 
+	global.UserCompleteSubscriber, err = queue.NewSubscriber(amqpConn, queue2.UserCmlQExName, logger)
+	if err != nil {
+		panic(err)
+	}
 }

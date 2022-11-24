@@ -66,18 +66,3 @@ func NewJWTokenGen(issue string, ExpiresAt time.Duration, privateKey *rsa.Privat
 		privateKey: privateKey,
 	}
 }
-
-func (t *JWTokenGen) GenerateToken(nickName string, id uint32, role uint32) (string, error) {
-	nowSec := t.nowFunc()
-	return jwt.NewWithClaims(jwt.SigningMethodRS256, CustomClaim{
-		Nickname: nickName,
-		GoodsId:  id,
-		Role:     role,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: nowSec.Add(t.ExpiresAt).Unix(),
-			IssuedAt:  nowSec.Unix(),
-			Issuer:    t.Issue,
-			NotBefore: nowSec.Unix(),
-		},
-	}).SignedString(t.privateKey)
-}
