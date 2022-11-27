@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"go.uber.org/zap"
 	"golang.org/x/net/context"
 	"gorm.io/gorm"
@@ -36,7 +37,12 @@ type divideQuestion struct {
 
 //TODO:完成题库的题目提取
 func (d *divideQuestion) Divide(cnt int) ([]string, []string, error) {
-	return nil, nil, nil
+	var ques, ans []string
+	for i := 0; i < 10; i++ {
+		ques = append(ques, fmt.Sprintf("题目%d", i))
+		ans = append(ans, string(i%4+'a')) // a b c d
+	}
+	return ques, ans, nil
 }
 
 type Config struct {

@@ -18,7 +18,6 @@ import (
 // 参加活动
 func (P *PKService) Join(ctx context.Context, req *proto.JoinRequest) (*proto.JoinResponse, error) {
 	var (
-		err    error
 		divide []string // 题目列表
 		answer []string // 答案列表
 	)
@@ -32,17 +31,10 @@ func (P *PKService) Join(ctx context.Context, req *proto.JoinRequest) (*proto.Jo
 	}
 	// 现在获取成功
 	switch req.FindType {
-	case proto.FindType_Avengers:
-		// 1. 查询对局表
-		//	获取最近一次且输了的winner id -> 利用 redis  hash table
-		// 对方如果也
-
 	case proto.FindType_Random:
 		// 随机选在线的用户
 		// 推入等待列表
-		//global.RedisClient.RPush(c, global.RedisWaitQueueKeyName, Uid)
 		P.watcher.Add <- queue.UserId(Uid)
-
 	case proto.FindType_Choose:
 		// 先检查用户是否参加活动
 		err := P.UserIsExists(c, req.OtherId)
@@ -50,18 +42,13 @@ func (P *PKService) Join(ctx context.Context, req *proto.JoinRequest) (*proto.Jo
 			P.logger.Info("user is not exist", zap.Error(err))
 			return nil, status.Errorf(codes.FailedPrecondition, "")
 		}
-		// 用户存在后发起离线挑战
+		// 发起挑战
+		// 挑战 id
+
 	}
 	// 返回建立成功开始建立
-	//TODO: 查询题目
-	for i := 0; i < 5; i++ {
-		divide, answer, err = P.Divide(QuestionCnt)
-		if err == nil {
-			break
-		} else {
-			P.logger.Info("获取题目错误")
-		}
-	}
+	// 查询题目
+	divide, answer, _ = P.Divide(QuestionCnt)
 	resp := &proto.JoinResponse{
 		Question: divide,
 		Answer:   answer,

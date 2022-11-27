@@ -22,7 +22,7 @@ func (p *Publisher) Publish(c context.Context, uid queue.UserId) error {
 	}
 	return p.ch.Publish(
 		p.exchange,
-		"",    //Key
+		"",    //key
 		false, //mandatory
 		false, //immedaiiote
 		amqp.Publishing{
